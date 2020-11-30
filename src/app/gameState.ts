@@ -4,6 +4,9 @@ import bonuses from '../assets/images/bonus/*.png';
 import sounds from '../assets/sounds/*.wav';
 import otherImages from '../assets/other/*.png';
 import screens from '../assets/screenes/*.png';
+import btn from '../assets/images/loader_bar/button.png';
+import loaderBarPath from '../assets/images/loader_bar/loader-bar.png';
+import loaderBgPath from '../assets/images/loader_bar/loader-bg.png';
 import * as PIXI from 'pixi.js';
 
 // import imagePath from '../assets/images/board';
@@ -19,13 +22,17 @@ export class LoadGame implements GameState {
         const stage = gameApp.app.stage;
 
         gameApp.loader
+            .add(loaderBgPath)
             .add(Object.values(images))
+            .add(btn)
+            .add(loaderBarPath)
             .add(Object.values(sounds))
             .add(Object.values(bonuses))
-            .add(Object.values(otherImages))
-            .add(Object.values(screens));
+            .add(Object.values(otherImages));
 
         gameApp.loader.load();
+
+        console.log(btn);
 
         const progressBar = new PIXI.Graphics();
         stage.addChild(progressBar);
@@ -38,7 +45,6 @@ export class LoadGame implements GameState {
 
 
         gameApp.loader.onProgress.add(e => {
-            // progressBar.clear()
             progressBar.beginFill(0xFFFF00);
             progressBar.drawRect(212, 500, e.progress * 6, 60);
             progressBar.endFill();
@@ -48,7 +54,12 @@ export class LoadGame implements GameState {
         gameApp.loader.onComplete.add(e => {
             console.log('DISPLAY BUTTON');
             stage.removeChild(progressBar);
-            new PIXI.Sprite();
+
+            const button = new PIXI.Sprite(PIXI.Texture.from(btn));
+            button.x = 10;
+            button.y = 15
+            gameApp.app.stage.addChild(button);
+
         })
 
         gameApp.loader.onError.add(e => {

@@ -8,5 +8,4 @@ export enum Image {
     WALL2 = "wall_2.png",
     WALL3 = "wall_3.png",
     WALL4 = "wall_4.png",
-
 }
