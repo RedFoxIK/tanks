@@ -4,7 +4,7 @@ import bonuses from '../assets/images/bonus/*.png';
 import sounds from '../assets/sounds/*.wav';
 import otherImages from '../assets/other/*.png';
 import * as PIXI from 'pixi.js';
-import {ImagePath} from "./model/imagePath";
+import {BoardAsset} from "./model/asset";
 
 export interface GameState {
     load(gameApp: GameApp);
@@ -14,10 +14,14 @@ export class LoadGame implements GameState {
     load(gameApp: GameApp) {
         const stage = gameApp.app.stage;
 
+        console.log(Object.values(BoardAsset));
+
+        Object.values(BoardAsset).forEach(value => console.log(value.name))
+        Object.values(BoardAsset).forEach(value => console.log(value))
+
         gameApp.loader
             .add(Object.values(images))
-            .add('startBtn', 'assets/images/loader_bar/button.png')
-            .add(ImagePath.all)
+            .add('startBtn', 'assets/images/buttons/start.png')
             .add(Object.values(sounds))
             .add(Object.values(bonuses))
             .add(Object.values(otherImages));
@@ -29,31 +33,32 @@ export class LoadGame implements GameState {
         title.position.y = 200;
         stage.addChild(title);
 
-        const progressBarBorder = new PIXI.Sprite(PIXI.Texture.from('assets/images/loader_bar/loader-bg.png'));
-        progressBarBorder.x = 200;
-        progressBarBorder.y = 500;
-        progressBarBorder.width = 600;
-        progressBarBorder.height = 80
-        stage.addChild(progressBarBorder);
-
-        const progressBarBg = new PIXI.Sprite(PIXI.Texture.from('assets/images/loader_bar/loader-bar.png'));
-        progressBarBg.x = 205;
-        progressBarBg.y = 505;
-        progressBarBg.width = 0;
-        progressBarBg.height = 70;
+        const progressBarBg = new PIXI.Sprite(PIXI.Texture.from('assets/images/loader/loader-bg.png'));
+        progressBarBg.x = 200;
+        progressBarBg.y = 500;
+        progressBarBg.width = 600;
+        progressBarBg.height = 80
         stage.addChild(progressBarBg);
 
+        const progressBar = new PIXI.Sprite(PIXI.Texture.from('assets/images/loader/loader-bar.png'));
+        progressBar.x = 205;
+        progressBar.y = 505;
+        progressBar.width = 0;
+        progressBar.height = 70;
+        stage.addChild(progressBar);
+
         gameApp.loader.onProgress.add(e => {
-            progressBarBg.width = 590 * (e.progress * 0.01);
+            progressBar.width = 590 * (e.progress * 0.01);
             gameApp.app.renderer.render(stage);
         })
 
         gameApp.loader.onComplete.add((loader, resources) => {
-            stage.removeChild(progressBarBorder, progressBarBg);
+            stage.removeChild(progressBarBg, progressBar);
 
             const button = new PIXI.Sprite(resources.startBtn.texture);
             button.x = 350;
             button.y = 450;
+            console.log(button);
 
             button.interactive = true;
             button.buttonMode = true;
