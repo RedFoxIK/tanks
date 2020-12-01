@@ -4,9 +4,10 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "start": "npm run clean && parcel src/index.html",
+    "start": "npm run clean && npm run copy:assets && parcel src/index.html",
     "clean": "rimraf ./dist ./.cache",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "copy:assets": "cpx 'src/assets/**' 'dist/assets'"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,7 @@
   },
   "dependencies": {
     "assets": "^3.0.1",
+    "cpx": "^1.5.0",
     "express": "^4.16.4",
     "pixi.js": "^5.3.3",
     "src": "^1.1.2"
