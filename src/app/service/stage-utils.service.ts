@@ -1,6 +1,5 @@
 import * as PIXI from "pixi.js";
 import {Sprite, Text} from "pixi.js";
-import {Asset} from "../model/asset";
 
 export class StageUtilsService {
     private fontFamily = 'Snippet';
@@ -26,23 +25,20 @@ export class StageUtilsService {
         return stageText;
     }
 
-    addStaticSpriteFromTexture(pathToImg: string, x: number, y: number, width?: number, height?: number): Sprite {
-        const sprite = new PIXI.Sprite(PIXI.Texture.from(pathToImg));
+    addSprite(sprite: Sprite, x: number, y: number, width?: number, height?: number) {
         sprite.x = x;
         sprite.y = y;
-        sprite.width = width;
-        sprite.height = height;
+        if (width) {
+            sprite.width = width;
+            sprite.height = height;
+        }
         this.stage.addChild(sprite);
-        return sprite;
     }
 
-    addInteractiveSprite(assetEnum: Asset, assetValue: string, x: number, y: number, interactive: boolean) {
-        // const btnKey =  EnumUtilsService.getKey(ButtonAsset, ButtonAsset.START);
-        // const button = new PIXI.Sprite(resources[btnKey].texture);
-        // button.x = 350;
-        // button.y = 450;
-        //
-        // button.interactive = true;
+    makeSpriteInteractive(sprite: Sprite, buttonMode: boolean, event: string, callback: Function) {
+        sprite.interactive = true;
+        sprite.buttonMode = true;
+        sprite.on(event, () => callback());
     }
 
     rerenderScene() {
@@ -52,8 +48,4 @@ export class StageUtilsService {
     removeSprites(...sprites: any): void {
         this.stage.removeChild(sprites);
     }
-
-    // removeSprites(...children: Sprite[]) {
-    //     this.stage.removeChild(children);
-    // }
 }

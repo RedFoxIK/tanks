@@ -1,8 +1,8 @@
 import {Game} from "../model/game";
 import {StageUtilsService} from "../service/stage-utils.service";
 import * as PIXI from 'pixi.js';
-import {EnumUtilsService} from "../service/enum-utils.service";
-import {BoardAsset, BonusAsset, ButtonAsset, LoaderAsset, SoundAsset, TankAsset} from "../model/asset";
+import {ButtonAsset, LoaderAsset} from "../model/asset";
+import {LoaderUtilsService} from "../service/loader-utils.service";
 
 export class GameController {
     readonly view: HTMLElement;
@@ -10,51 +10,40 @@ export class GameController {
     private app: PIXI.Application;
 
     private stageUtilsService: StageUtilsService;
+    private loaderService: LoaderUtilsService;
 
     constructor(view: HTMLElement) {
         this.view = view;
         this.game = new Game();
-        this.app = new PIXI.Application({width: 1024, height: 768, backgroundColor : 0x123E67});
+        this.app = new PIXI.Application({width: 1024, height: 768, backgroundColor: 0x123E67});
         this.stageUtilsService = new StageUtilsService(this.app.stage, this.app.renderer);
+        this.loaderService = new LoaderUtilsService(this.app.loader);
     }
 
     startGame() {
         this.game.changeState('LOAD');
         this.stageUtilsService.drawScene(this.app.view, this.view);
 
-        const title =  this.stageUtilsService.addText('Tank Game', 280, 200, 100);
-        const progressBg = this.stageUtilsService.addStaticSpriteFromTexture(LoaderAsset.LOADER_BG, 200, 500, 600, 80);
-        const progressBar = this.stageUtilsService.addStaticSpriteFromTexture(LoaderAsset.LOADER_BAR, 205, 505, 0, 70);
+        const title = this.stageUtilsService.addText('Tank Game', 280, 200, 100);
 
-        EnumUtilsService.applyFunction((key, value) => this.app.loader.add(key, value),
-            ButtonAsset, BoardAsset, BonusAsset, TankAsset, SoundAsset);
+        const progressBg = this.loaderService.createSpriteFromTexture(LoaderAsset.LOADER_BG);
+        this.stageUtilsService.addSprite(progressBg, 200, 500, 600, 80);
 
-        this.app.loader.load();
+        const progressBar = this.loaderService.createSpriteFromTexture(LoaderAsset.LOADER_BAR);
+        this.stageUtilsService.addSprite(progressBar, 205, 505, 0, 70);
 
-        this.app.loader.onProgress.add(e => {
+        const onProgress = e => {
             progressBar.width = 590 * (e.progress * 0.01);
             this.stageUtilsService.rerenderScene();
-        })
+        };
 
-
-        this.app.loader.onComplete.add((loader, resources) => {
+        const onComplete = () => {
             this.stageUtilsService.stage.removeChild(progressBg, progressBar);
-
-            const btnKey =  EnumUtilsService.getKey(ButtonAsset, ButtonAsset.START);
-            const button = new PIXI.Sprite(this.app.loader.resources[btnKey].texture);
-            button.x = 350;
-            button.y = 450;
-
-            button.interactive = true;
-            button.buttonMode = true;
-
-            button.on("pointerdown", () => {
-                this.stageUtilsService.stage.removeChild(button, title);
-            })
-
-            this.app.stage.addChild(button);
-
-        })
-
+            const startBtn = this.loaderService.createSpriteFromLoadedTexture(ButtonAsset, ButtonAsset.START);
+            this.stageUtilsService.addSprite(startBtn, 350, 450);
+            this.stageUtilsService.makeSpriteInteractive(startBtn, true,
+                "pointerdown", () => this.stageUtilsService.stage.removeChild(startBtn, title));
+        }
+        this.loaderService.loadStartAssets(onProgress, onComplete);
     }
 }
