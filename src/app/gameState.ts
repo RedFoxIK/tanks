@@ -1,10 +1,7 @@
 import {GameApp} from "./controller/gameApp";
-import images from '../assets/images/board/*.png';
-import bonuses from '../assets/images/bonus/*.png';
-import sounds from '../assets/sounds/*.wav';
-import otherImages from '../assets/other/*.png';
 import * as PIXI from 'pixi.js';
-import {BoardAsset} from "./model/asset";
+import {BoardAsset, BonusAsset, ButtonAsset, SoundAsset, TankAsset} from "./model/asset";
+import {EnumUtilsService} from "./service/enum-utils.service";
 
 export interface GameState {
     load(gameApp: GameApp);
@@ -14,17 +11,8 @@ export class LoadGame implements GameState {
     load(gameApp: GameApp) {
         const stage = gameApp.app.stage;
 
-        console.log(Object.values(BoardAsset));
-
-        Object.values(BoardAsset).forEach(value => console.log(value.name))
-        Object.values(BoardAsset).forEach(value => console.log(value))
-
-        gameApp.loader
-            .add(Object.values(images))
-            .add('startBtn', 'assets/images/buttons/start.png')
-            .add(Object.values(sounds))
-            .add(Object.values(bonuses))
-            .add(Object.values(otherImages));
+        EnumUtilsService.applyFunction((key, value) => gameApp.loader.add(key, value),
+            ButtonAsset, BoardAsset, BonusAsset, TankAsset, SoundAsset);
 
         gameApp.loader.load();
 
@@ -55,10 +43,10 @@ export class LoadGame implements GameState {
         gameApp.loader.onComplete.add((loader, resources) => {
             stage.removeChild(progressBarBg, progressBar);
 
-            const button = new PIXI.Sprite(resources.startBtn.texture);
+            const btnKey =  EnumUtilsService.getKey(ButtonAsset, ButtonAsset.START);
+            const button = new PIXI.Sprite(resources[btnKey].texture);
             button.x = 350;
             button.y = 450;
-            console.log(button);
 
             button.interactive = true;
             button.buttonMode = true;
@@ -73,8 +61,7 @@ export class LoadGame implements GameState {
     }
 }
 
-export class PlayGame
-    implements GameState {
+export class PlayGame implements GameState {
     load(gameApp: GameApp) {
     }
 

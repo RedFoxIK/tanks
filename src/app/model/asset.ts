@@ -9,7 +9,6 @@ export enum BoardAsset {
     WATER = 'assets/images/board/water.png',
 }
 
-
 export enum BonusAsset {
     LIVE = 'assets/images/bonus/live.png',
     SHIELD = 'assets/images/bonus/shield.png',
@@ -17,8 +16,7 @@ export enum BonusAsset {
     SPEED = 'assets/images/bonus/speed.png',
 }
 
-
-export enum ButtonsAsset {
+export enum ButtonAsset {
     START = 'assets/images/buttons/start.png',
     HIGH_SCORE = 'assets/images/buttons/scores.png',
 }
@@ -30,4 +28,18 @@ export enum TankAsset {
     ENEMY_TANK_3 = 'assets/images/tanks/enemy_white.png',
     BULLET = 'assets/images/tanks/bullet.png',
     ENEMY_BULLET = 'assets/images/tanks/enemy_bullet.png',
+}
+
+export enum LoaderAsset {
+    LOADER_BG = 'assets/images/loader/loader-bg',
+    LOADER_BAR = 'assets/images/loader/loader-bar.png'
+}
+
+export enum SoundAsset {
+    BONUS = 'assets/sounds/bonus.wav',
+    EXPLODE = 'assets/sounds/explode.wav',
+    HIT = 'assets/sounds/hit.wav',
+    LOSE = 'assets/sounds/lose.wav',
+    SHOT = 'assets/sounds/shot.wav',
+    WIN = 'assets/sounds/win.wav',
 }
