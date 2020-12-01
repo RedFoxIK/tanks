@@ -1,4 +1,4 @@
-import {GameApp} from "./controller/gameApp";
+import {GameController} from "./controller/gameController";
 
-const game = new GameApp(document.body, 1024, 768);
-game.startGame();
+const gameController = new GameController(document.body);
+gameController.startGame();

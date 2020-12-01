@@ -1,4 +1,5 @@
-import PIXI, {Sprite} from "pixi.js";
+import {Sprite, Text} from "pixi.js";
+import * as PIXI from 'pixi.js';
 
 export class StageUtilsService {
     private fontFamily = 'Snippet';
@@ -8,15 +9,20 @@ export class StageUtilsService {
     readonly renderer: PIXI.Renderer;
 
     constructor(stage: PIXI.Container, renderer: PIXI.Renderer) {
-        this.stage = stage;
         this.renderer = renderer;
+        this.stage = stage;
     }
 
-    addText(text: string, x: number, y: number, fontSize: number): void {
+    drawScene(canvas: HTMLCanvasElement, view: HTMLElement) {
+        view.replaceChild(canvas, view.lastElementChild);
+    }
+
+    addText(text: string, x: number, y: number, fontSize: number): Text {
         const stageText = new PIXI.Text(text, {fontSize: fontSize, fontFamily: this.fontFamily, fill: this.textColor});
         stageText.position.x = 280;
         stageText.position.y = 200;
         this.stage.addChild(stageText);
+        return stageText;
     }
 
     addStaticSpriteFromTexture(pathToImg: string, x: number, y: number, width: number, height: number): Sprite {
@@ -29,7 +35,11 @@ export class StageUtilsService {
         return sprite;
     }
 
-    redrawScene() {
+    rerenderScene() {
         this.renderer.render(this.stage);
     }
+
+    // removeSprites(...children: Sprite[]) {
+    //     this.stage.removeChild(children);
+    // }
 }
