@@ -41,7 +41,7 @@ export class GameController {
             this.stageUtilsService.stage.removeChild(progressBg, progressBar);
 
             const btnKey =  EnumUtilsService.getKey(ButtonAsset, ButtonAsset.START);
-            const button = new PIXI.Sprite(resources[btnKey].texture);
+            const button = new PIXI.Sprite(this.app.loader.resources[btnKey].texture);
             button.x = 350;
             button.y = 450;
 
@@ -55,5 +55,6 @@ export class GameController {
             this.app.stage.addChild(button);
 
         })
+
     }
 }

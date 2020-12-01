@@ -1,3 +1,5 @@
+import {Asset} from "../model/asset";
+
 export class EnumUtilsService {
 
     static getKey(e: any, eValue: string): string {

@@ -1,3 +1,5 @@
+export type Asset = BoardAsset | BonusAsset | ButtonAsset | TankAsset | SoundAsset;
+
 export enum BoardAsset {
     BLOCK = 'assets/images/board/block.png',
     EAGLE = 'assets/images/board/eagle.png',
