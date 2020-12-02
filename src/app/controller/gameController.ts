@@ -3,6 +3,7 @@ import {StageUtilsService} from "../service/stage-utils.service";
 import * as PIXI from 'pixi.js';
 import {ButtonAsset, LoaderAsset} from "../model/asset";
 import {LoaderUtilsService} from "../service/loader-utils.service";
+import {BoardGeneratorService} from "../service/board-generator.service";
 
 export class GameController {
     readonly view: HTMLElement;
@@ -11,6 +12,7 @@ export class GameController {
 
     private stageUtilsService: StageUtilsService;
     private loaderService: LoaderUtilsService;
+    private boardGeneratorService: BoardGeneratorService;
 
     constructor(view: HTMLElement) {
         this.view = view;
@@ -18,6 +20,7 @@ export class GameController {
         this.app = new PIXI.Application({width: 1024, height: 768, backgroundColor: 0x123E67});
         this.stageUtilsService = new StageUtilsService(this.app.stage, this.app.renderer);
         this.loaderService = new LoaderUtilsService(this.app.loader);
+        this.boardGeneratorService = new BoardGeneratorService(this.stageUtilsService, this.loaderService);
     }
 
     startGame() {
@@ -42,8 +45,15 @@ export class GameController {
             const startBtn = this.loaderService.createSpriteFromLoadedTexture(ButtonAsset, ButtonAsset.START);
             this.stageUtilsService.addSprite(startBtn, 350, 450);
             this.stageUtilsService.makeSpriteInteractive(startBtn, true,
-                "pointerdown", () => this.stageUtilsService.removeSprites(startBtn, title));
+                "pointerdown", () => {
+                    this.stageUtilsService.removeSprites(startBtn, title)
+                    this.nextStep();
+                });
         }
         this.loaderService.loadStartAssets(onProgress, onComplete);
+    }
+
+    nextStep() {
+        this.boardGeneratorService.generateBoard();
     }
 }
