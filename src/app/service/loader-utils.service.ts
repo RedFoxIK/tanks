@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";
 import {EnumUtilsService} from "./enum-utils.service";
 import {BoardAsset, BonusAsset, ButtonAsset, SoundAsset, TankAsset} from "../model/asset";
+import {SpriteWrapper} from "../model/spriteWrapper";
 
 export class LoaderUtilsService {
     readonly loader: PIXI.Loader;
@@ -19,12 +20,12 @@ export class LoaderUtilsService {
         this.loader.onComplete.add(() => onCompleteFn());
     }
 
-    createSpriteFromTexture(pathToImg: string) {
-        return new PIXI.Sprite(PIXI.Texture.from(pathToImg));
+    createSpriteFromTexture(pathToImg: string): SpriteWrapper {
+        return new SpriteWrapper(new PIXI.Sprite(PIXI.Texture.from(pathToImg)));
     }
 
     createSpriteFromLoadedTexture(assetEnum: any, assetValue: string) {
         const key = EnumUtilsService.getKey(assetEnum, assetValue);
-        return new PIXI.Sprite(this.loader.resources[key].texture);
+        return new SpriteWrapper(new PIXI.Sprite(this.loader.resources[key].texture));
     }
 }

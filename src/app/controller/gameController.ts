@@ -33,16 +33,16 @@ export class GameController {
         this.stageUtilsService.addSprite(progressBar, 205, 505, 0, 70);
 
         const onProgress = e => {
-            progressBar.width = 590 * (e.progress * 0.01);
+            progressBar.sprite.width = 590 * (e.progress * 0.01);
             this.stageUtilsService.rerenderScene();
         };
 
         const onComplete = () => {
-            this.stageUtilsService.stage.removeChild(progressBg, progressBar);
+            this.stageUtilsService.clearScene();
             const startBtn = this.loaderService.createSpriteFromLoadedTexture(ButtonAsset, ButtonAsset.START);
             this.stageUtilsService.addSprite(startBtn, 350, 450);
             this.stageUtilsService.makeSpriteInteractive(startBtn, true,
-                "pointerdown", () => this.stageUtilsService.stage.removeChild(startBtn, title));
+                "pointerdown", () => this.stageUtilsService.removeSprites(startBtn, title));
         }
         this.loaderService.loadStartAssets(onProgress, onComplete);
     }

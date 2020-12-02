@@ -33,7 +33,7 @@ export enum TankAsset {
 }
 
 export enum LoaderAsset {
-    LOADER_BG = 'assets/images/loader/loader-bg',
+    LOADER_BG = 'assets/images/loader/loader-bg.png',
     LOADER_BAR = 'assets/images/loader/loader-bar.png'
 }
 
