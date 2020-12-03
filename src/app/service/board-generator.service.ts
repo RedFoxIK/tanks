@@ -2,6 +2,7 @@ import {SpriteService} from "./sprite.service";
 import {BoardAsset, ButtonAsset, LoaderAsset} from "../model/asset";
 import PIXI from "pixi.js";
 import {Game, GameState} from "../model/game";
+import boarMapResponse from '../api/board-map.json';
 
 export class BoardGeneratorService {
     readonly boardSize = 32;
@@ -39,11 +40,28 @@ export class BoardGeneratorService {
     }
 
     public generateBoard() {
-        for (let i = 0; i < 32; i++) {
-            this.spriteService.addSprite(BoardAsset, BoardAsset.BLOCK, 0, i * 24, 24, 24);
-            this.spriteService.addSprite(BoardAsset, BoardAsset.BLOCK, 744, i * 24, 24, 24);
-            this.spriteService.addSprite(BoardAsset, BoardAsset.BLOCK, i * 24, 0, 24, 24);
-            this.spriteService.addSprite(BoardAsset, BoardAsset.BLOCK,  i * 24, 744, 24, 24);
+        for (let i = 1; i <= 32; i++) {
+            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, 1, i);
+            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, 32, i);
+            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, i, 1);
+            this.createBoardElem(BoardAsset, BoardAsset.BLOCK,  i, 32);
         }
+        const eagle = boarMapResponse.eagle;
+        this.createBoardElem(BoardAsset, BoardAsset.EAGLE, eagle.x, eagle.y);
+
+        const waterElems = boarMapResponse.water;
+        waterElems.forEach(w => this.createBoardElem(BoardAsset, BoardAsset.WATER, w.x, w.y));
+
+        const leaves = boarMapResponse.leaves;
+        leaves.forEach(l => this.createBoardElem(BoardAsset, BoardAsset.LEAVES, l.x, l.y));
+
+        const blocks = boarMapResponse.blocks;
+        blocks.forEach(b => this.createBoardElem(BoardAsset, BoardAsset.BLOCK, b.x, b.y));
+    }
+
+    createBoardElem(assetEnum, assetEnumValue: string, x: number, y: number) {
+        const stageX = (x - 1) * this.spriteSize;
+        const stageY = (y - 1) * this.spriteSize;
+        this.spriteService.addSprite(assetEnum, assetEnumValue, stageX, stageY, this.spriteSize, this.spriteSize);
     }
 }

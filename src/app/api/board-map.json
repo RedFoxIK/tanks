@@ -2,27 +2,27 @@
   "tanks": [
     {
       "x": 2,
-      "y": 32,
+      "y": 31,
       "tankType": "PLAYER"
     },
     {
-      "x": 31,
-      "y": 1,
+      "x": 30,
+      "y": 2,
       "tankType": "ENEMY"
     },
     {
       "x": 16,
-      "y": 1,
+      "y": 2,
       "tankType": "ENEMY"
     },
     {
       "x": 15,
-      "y": 1,
+      "y": 2,
       "tankType": "ENEMY"
     },
     {
       "x": 16,
-      "y": 1,
+      "y": 2,
       "tankType": "ENEMY"
     },
     {
@@ -59,72 +59,72 @@
   "walls": [
     {
       "x": 14,
-      "y": 32,
+      "y": 31,
       "wallType": "WALL1"
     },
     {
       "x": 15,
-      "y": 32,
+      "y": 31,
       "wallType": "TYPE1"
     },
     {
       "x": 14,
-      "y": 31,
+      "y": 30,
       "wallType": "TYPE1"
     },
     {
       "x": 15,
-      "y": 31,
+      "y": 30,
       "wallType": "TYPE1"
     },
     {
       "x": 17,
-      "y": 32,
+      "y": 31,
       "wallType": "WALL2"
     },
     {
       "x": 18,
-      "y": 32,
+      "y": 31,
       "wallType": "TYPE2"
     },
     {
       "x": 17,
-      "y": 31,
+      "y": 30,
       "wallType": "TYPE2"
     },
     {
       "x": 18,
-      "y": 31,
+      "y": 30,
       "wallType": "TYPE2"
     },
     {
       "x": 14,
-      "y": 30,
+      "y": 29,
       "wallType": "WALL3"
     },
     {
       "x": 15,
-      "y": 30,
+      "y": 29,
+      "wallType": "WALL3"
+    },
+    {
+      "x": 16,
+      "y": 29,
       "wallType": "WALL3"
     },
     {
       "x": 16,
       "y": 30,
-      "wallType": "WALL3"
-    },
-    {
-      "x": 16,
-      "y": 31,
       "wallType": "WALL3"
     },
     {
       "x": 17,
-      "y": 30,
+      "y": 29,
       "wallType": "WALL3"
     },
     {
       "x": 18,
-      "y": 30,
+      "y": 29,
       "wallType": "WALL3"
     }
   ],
@@ -272,6 +272,6 @@
   ],
   "eagle": {
     "x": 16,
-    "y": 32
+    "y": 31
   }
 }
