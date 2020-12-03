@@ -1,16 +1,17 @@
 import {SpriteService} from "./sprite.service";
 import {BoardAsset, ButtonAsset, LoaderAsset} from "../model/asset";
 import PIXI from "pixi.js";
+import {Game, GameState} from "../model/game";
 
 export class BoardGeneratorService {
     readonly boardSize = 32;
     readonly spriteSize = 24;
 
     private spriteService: SpriteService;
-    private view: HTMLElement;
+    private game: Game;
 
-    constructor(app: PIXI.Application, view: HTMLElement) {
-        this.view = view;
+    constructor(game: Game, app: PIXI.Application, view: HTMLElement) {
+        this.game = game;
         this.spriteService = new SpriteService(app, view);
     }
 
@@ -30,7 +31,7 @@ export class BoardGeneratorService {
             this.spriteService.makeSpriteInteractive(startBtn, true,
                 "pointerdown", () => {
                     this.spriteService.clearScene()
-                    this.generateBoard();
+                    this.game.changeState(GameState.IN_PROGRESS);
                 });
         }
 

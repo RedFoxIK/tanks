@@ -1,4 +1,3 @@
 import {GameController} from "./controller/gameController";
 
-const gameController = new GameController(document.body);
-gameController.startGame();
+new GameController(document.body);

@@ -1,19 +1,30 @@
-import {Game} from "../model/game";
+import {Game, GameState} from "../model/game";
 import * as PIXI from 'pixi.js';
 import {BoardGeneratorService} from "../service/board-generator.service";
 
 export class GameController {
-    private game: Game;
-
+    readonly game: Game;
     private boardGeneratorService: BoardGeneratorService;
 
     constructor(view: HTMLElement) {
-        this.game = new Game();
         const app = new PIXI.Application({width: 1024, height: 768, backgroundColor: 0x123E67});
-        this.boardGeneratorService = new BoardGeneratorService(app, view);
+        this.game = new Game();
+        this.boardGeneratorService = new BoardGeneratorService(this.game, app, view);
+        this.game.changeState$.subscribe(state => this.resolveState(state))
+        this.game.changeState(GameState.CREATED);
     }
 
-    startGame() {
-        this.boardGeneratorService.generatePreloadedBoard();
+    private resolveState(state: GameState) {
+        switch (state) {
+            case GameState.CREATED:
+                this.game.changeState(GameState.PRELOADED);
+                break;
+            case GameState.PRELOADED:
+                this.boardGeneratorService.generatePreloadedBoard()
+                break;
+            case GameState.IN_PROGRESS:
+                this.boardGeneratorService.generateBoard();
+                break;
+        }
     }
 }
