@@ -2,11 +2,14 @@ import {SpriteService} from "./sprite.service";
 import {BoardAsset, ButtonAsset, LoaderAsset} from "../model/asset";
 import PIXI from "pixi.js";
 import {Game, GameState} from "../model/game";
+// @ts-ignore
 import boarMapResponse from '../api/board-map.json';
+import {BoardElementsFactory} from "./boardElements.factory";
+import {BoardObject} from "../model/boardElement";
+import {BoardSprite} from "../model/spriteWrapper";
 
 export class BoardGeneratorService {
     readonly boardSize = 32;
-    readonly spriteSize = 24;
 
     private spriteService: SpriteService;
     private game: Game;
@@ -22,7 +25,7 @@ export class BoardGeneratorService {
         const progressBar = this.spriteService.addSprite(LoaderAsset, LoaderAsset.LOADER_BAR, 205, 505, 0, 70);
 
         const onProgress = e => {
-            progressBar.sprite.width = 590 * (e.progress * 0.01);
+            progressBar.changeWidth(590 * (e.progress * 0.01));
             this.spriteService.rerenderScene();
         };
 
@@ -35,33 +38,31 @@ export class BoardGeneratorService {
                     this.game.changeState(GameState.IN_PROGRESS);
                 });
         }
-
         this.spriteService.loadAssets(onProgress, onComplete);
     }
 
     public generateBoard() {
         for (let i = 1; i <= 32; i++) {
-            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, 1, i);
-            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, 32, i);
-            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, i, 1);
-            this.createBoardElem(BoardAsset, BoardAsset.BLOCK,  i, 32);
+            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, 1, i, BoardObject.BLOCK);
+            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, 32, i, BoardObject.BLOCK);
+            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, i, 1, BoardObject.BLOCK);
+            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, i, 32, BoardObject.BLOCK);
         }
-        const eagle = boarMapResponse.eagle;
-        this.createBoardElem(BoardAsset, BoardAsset.EAGLE, eagle.x, eagle.y);
 
-        const waterElems = boarMapResponse.water;
-        waterElems.forEach(w => this.createBoardElem(BoardAsset, BoardAsset.WATER, w.x, w.y));
-
-        const leaves = boarMapResponse.leaves;
-        leaves.forEach(l => this.createBoardElem(BoardAsset, BoardAsset.LEAVES, l.x, l.y));
-
-        const blocks = boarMapResponse.blocks;
-        blocks.forEach(b => this.createBoardElem(BoardAsset, BoardAsset.BLOCK, b.x, b.y));
+        Object.keys(boarMapResponse).forEach(key => {
+            boarMapResponse[key].assets.forEach(asset => {
+                this.createBoardElem(BoardAsset, BoardAsset[boarMapResponse[key].enumValue], asset.x, asset.y, asset.boardElem)
+            });
+        })
     }
 
-    createBoardElem(assetEnum, assetEnumValue: string, x: number, y: number) {
-        const stageX = (x - 1) * this.spriteSize;
-        const stageY = (y - 1) * this.spriteSize;
-        this.spriteService.addSprite(assetEnum, assetEnumValue, stageX, stageY, this.spriteSize, this.spriteSize);
+
+
+    createBoardElem(assetEnum, assetEnumValue: string, x: number, y: number, boardName: string) {
+        const stageX = BoardSprite.getSpriteCoordinate(x);
+        const stageY = BoardSprite.getSpriteCoordinate(y);
+
+        const spriteWrapper = this.spriteService.addSprite(assetEnum, assetEnumValue, stageX, stageY, BoardSprite.size, BoardSprite.size);
+        const boardElement = BoardElementsFactory.createBoardElem(boardName, spriteWrapper);
     }
 }

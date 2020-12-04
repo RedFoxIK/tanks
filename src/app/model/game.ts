@@ -6,6 +6,11 @@ export class Game {
 
     constructor() {
         this.changeState$ = new Subject<GameState>();
+        this.changeState(GameState.CREATED)
+    }
+
+    init() {
+        this.changeState(GameState.CREATED);
     }
 
     changeState(state: GameState) {

@@ -1,22 +1,18 @@
 import {Direction} from "./direction";
-import {Image} from "./image";
+import {SpriteWrapper} from "./spriteWrapper";
 
 export abstract class BoardElement {
-    protected x: number;
-    protected y: number;
+    protected spriteWrapper: SpriteWrapper;
     readonly isDestroyable: boolean;
-    readonly image: Image;
 
-    protected constructor(image: Image, x: number, y: number, isDestroyable: boolean) {
-        this.image = image;
-        this.x = x;
-        this.y = y;
+    protected constructor(spriteWrapper: SpriteWrapper, isDestroyable: boolean) {
+        this.spriteWrapper = spriteWrapper;
         this.isDestroyable = isDestroyable;
     }
 
     protected resetPosition(x: number, y: number): void {
-        this.x = x;
-        this.y = y;
+        this.spriteWrapper.sprite.x = x;
+        this.spriteWrapper.sprite.y = y;
     }
 
     public destroy(): void {
@@ -27,24 +23,25 @@ export abstract class BoardElement {
     }
 
     isDestroyed(): boolean {
-        return this.x === null || this.y === null;
+        // return this.x === null || this.y === null;
+        return false;
     }
 }
 
 export class MovableBoardElement extends BoardElement {
     protected speed: number;
 
-    constructor(image: Image, x: number, y: number, isDestroyable: boolean, speed: number) {
-        super(image, x, y, isDestroyable);
+    constructor(spriteWrapper: SpriteWrapper, isDestroyable: boolean, speed: number) {
+        super(spriteWrapper, isDestroyable);
         this.speed = speed;
     }
 
     move(direction: Direction) {
         switch (direction) {
-            case Direction.UP: this.y += 1; break;
-            case Direction.DOWN: this.y -= 1; break;
-            case Direction.RIGHT: this.x += 1; break;
-            case Direction.LEFT: this.x -= 1; break;
+            case Direction.UP: this.spriteWrapper.sprite.y += 1; break;
+            case Direction.DOWN: this.spriteWrapper.sprite.y -= 1; break;
+            case Direction.RIGHT: this.spriteWrapper.sprite.x += 1; break;
+            case Direction.LEFT: this.spriteWrapper.sprite.x -= 1; break;
         }
     }
 }
@@ -57,31 +54,39 @@ export class MovableBoardElement extends BoardElement {
 // }
 
 export class Eagle extends BoardElement {
-    constructor(x: number, y: number) {
-        super(Image.EAGLE, x, y, true);
+    constructor(spriteWrapper: SpriteWrapper) {
+        super(spriteWrapper, true);
     }
 }
 
 export class Wall extends BoardElement {
-    constructor(image: Image, x: number, y: number) {
-        super(image, x, y, true);
+    constructor(spriteWrapper: SpriteWrapper) {
+        super(spriteWrapper, true);
     }
 }
 
 export class Block extends BoardElement {
-    constructor(x: number, y: number) {
-        super(Image.BLOCK, x, y, false);
+    constructor(spriteWrapper: SpriteWrapper) {
+        super(spriteWrapper, false);
     }
 }
 
 export class Water extends BoardElement {
-    constructor(x: number, y: number) {
-        super(Image.WATER, x, y, false);
+    constructor(spriteWrapper: SpriteWrapper) {
+        super(spriteWrapper, false);
     }
 }
 
 export class Leaf extends BoardElement {
-    constructor(x: number, y: number) {
-        super(Image.LEAVES, x, y, false);
+    constructor(spriteWrapper: SpriteWrapper) {
+        super(spriteWrapper, false);
     }
+}
+
+export enum BoardObject {
+    BLOCK = "BLOCK",
+    WATER = "WATER",
+    LEAF = "LEAF",
+    WALL = "WALL",
+    EAGLE = "EAGLE",
 }

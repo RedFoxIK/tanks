@@ -11,10 +11,11 @@ export class GameController {
         this.game = new Game();
         this.boardGeneratorService = new BoardGeneratorService(this.game, app, view);
         this.game.changeState$.subscribe(state => this.resolveState(state))
-        this.game.changeState(GameState.CREATED);
+        this.game.init();
     }
 
     private resolveState(state: GameState) {
+        //TODO clear scene between statuses?
         switch (state) {
             case GameState.CREATED:
                 this.game.changeState(GameState.PRELOADED);
