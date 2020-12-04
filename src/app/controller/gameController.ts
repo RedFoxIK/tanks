@@ -1,6 +1,6 @@
 import {Game, GameState} from "../model/game";
 import * as PIXI from 'pixi.js';
-import {BoardGeneratorService} from "../service/board-generator.service";
+import {BoardGeneratorService} from "../service/boardGenerator.service";
 
 export class GameController {
     readonly game: Game;

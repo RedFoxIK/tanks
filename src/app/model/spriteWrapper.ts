@@ -1,14 +1,20 @@
 import {Sprite} from "pixi.js";
-import { v4 as uuid } from 'uuid';
+import {v4 as uuid} from 'uuid';
 
 export class SpriteWrapper {
     readonly id: string;
-    //TODO: make protected
     readonly sprite: Sprite;
 
-    constructor(sprite: Sprite) {
+    constructor(sprite: Sprite, x: number, y: number, width?: number, height?: number) {
         this.id = uuid();
         this.sprite = sprite;
+        this.sprite.x = x;
+        this.sprite.y = y;
+
+        if (!isNaN(height)) {
+            this.sprite.width = width;
+            this.sprite.height = height;
+        }
     }
 
     changeWidth(width: number) {
@@ -21,16 +27,18 @@ export class BoardSprite extends SpriteWrapper {
     private boardX: number;
     private boardY: number;
 
-    constructor(sprite: Sprite) {
-        super(sprite);
+    constructor(sprite: Sprite, x: number, y: number) {
+        const stageX = BoardSprite.getSpriteCoordinate(x);
+        const stageY = BoardSprite.getSpriteCoordinate(y);
+        super(sprite, stageX, stageY, BoardSprite.size, BoardSprite.size);
 
-        this.boardX = BoardSprite.getBoardCoordinate(sprite.x);
-        this.boardY = BoardSprite.getBoardCoordinate(sprite.y);
+        this.boardX = x;
+        this.boardY = y;
     }
 
     changeX(boardX: number): void {
         this.boardX = boardX;
-        this.sprite.x =  BoardSprite.getSpriteCoordinate(this.boardX);
+        this.sprite.x = BoardSprite.getSpriteCoordinate(this.boardX);
     }
 
     changeY(boardY: number): void {

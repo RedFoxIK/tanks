@@ -59,10 +59,6 @@ export class BoardGeneratorService {
 
 
     createBoardElem(assetEnum, assetEnumValue: string, x: number, y: number, boardName: string) {
-        const stageX = BoardSprite.getSpriteCoordinate(x);
-        const stageY = BoardSprite.getSpriteCoordinate(y);
-
-        const spriteWrapper = this.spriteService.addSprite(assetEnum, assetEnumValue, stageX, stageY, BoardSprite.size, BoardSprite.size);
-        const boardElement = BoardElementsFactory.createBoardElem(boardName, spriteWrapper);
+        const boardElement = this.spriteService.createBoardElem(assetEnum, assetEnumValue, x, y);
     }
 }

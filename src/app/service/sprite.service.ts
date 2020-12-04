@@ -1,7 +1,10 @@
 import * as PIXI from "pixi.js";
-import {SpriteWrapper} from "../model/spriteWrapper";
+import {BoardSprite, SpriteWrapper} from "../model/spriteWrapper";
 import {EnumUtilsService} from "./enum-utils.service";
 import {BoardAsset, BonusAsset, ButtonAsset, SoundAsset, TankAsset} from "../model/asset";
+import {BoardObject} from "../model/boardElement";
+import {BoardElementsFactory} from "./boardElements.factory";
+import {Sprite} from "pixi.js";
 
 export class SpriteService {
     readonly stage: PIXI.Container;
@@ -11,7 +14,6 @@ export class SpriteService {
     private isPreloadedPhase: boolean;
     private fontFamily = 'Snippet';
     private textColor = 'white';
-
 
     private spriteWrappersMap: Map<string, SpriteWrapper> = new Map<string, SpriteWrapper>();
 
@@ -40,25 +42,24 @@ export class SpriteService {
 
     addText(text: string, x: number, y: number, fontSize: number): SpriteWrapper {
         const stageText = new PIXI.Text(text, {fontSize: fontSize, fontFamily: this.fontFamily, fill: this.textColor});
-        stageText.position.x = 280;
-        stageText.position.y = 200;
         this.stage.addChild(stageText);
 
-        const spriteWrapper =  new SpriteWrapper(stageText);
+        const spriteWrapper = new SpriteWrapper(stageText, x, y);
         this.spriteWrappersMap.set(spriteWrapper.id, spriteWrapper)
         return spriteWrapper;
     }
 
-    addSprite(assetEnum: any, assetValue: string, x: number, y: number, width?: number, height?: number): SpriteWrapper {
-        const spriteWrapper = this.createSprite(assetEnum, assetValue);
-        spriteWrapper.sprite.x = x;
-        spriteWrapper.sprite.y = y;
+    createBoardElem(assetEnum: any, assetValue: string, x: number, y: number): BoardSprite {
+        const sprite = this.createSprite(assetEnum, assetValue);
+        const boardSprite = new BoardSprite(sprite, x, y);
+        this.addSpriteToBoard(boardSprite);
+        return boardSprite;
+    }
 
-        if (!isNaN(width)) {
-            spriteWrapper.sprite.width = width;
-            spriteWrapper.sprite.height = height;
-        }
-        this.stage.addChild(spriteWrapper.sprite);
+    addSprite(assetEnum: any, assetValue: string, x: number, y: number, width?: number, height?: number): SpriteWrapper {
+        const sprite = this.createSprite(assetEnum, assetValue);
+        const spriteWrapper = new SpriteWrapper(sprite, x, y, width, height);
+        this.addSpriteToBoard(spriteWrapper);
         return spriteWrapper;
     }
 
@@ -82,11 +83,14 @@ export class SpriteService {
        this.spriteWrappersMap.clear();
     }
 
-    private createSprite(assetEnum: any, assetValue: string) {
+    private createSprite(assetEnum: any, assetValue: string): Sprite {
         const texture = !this.isPreloadedPhase ? this.loader.resources[EnumUtilsService.getKey(assetEnum, assetValue)].texture :
             PIXI.Texture.from(assetValue);
-        const spriteWrapper = new SpriteWrapper(new PIXI.Sprite(texture));
+        return new PIXI.Sprite(texture);
+    }
+
+    private addSpriteToBoard(spriteWrapper: SpriteWrapper) {
+        this.stage.addChild(spriteWrapper.sprite);
         this.spriteWrappersMap.set(spriteWrapper.id, spriteWrapper)
-        return spriteWrapper;
     }
 }
