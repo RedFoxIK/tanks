@@ -1,18 +1,18 @@
 import {Direction} from "./direction";
-import {SpriteWrapper} from "./spriteWrapper";
+import {BoardSprite} from "./spriteWrapper";
 
 export abstract class BoardElement {
-    protected spriteWrapper: SpriteWrapper;
+    protected boardSprite: BoardSprite;
     readonly isDestroyable: boolean;
 
-    protected constructor(spriteWrapper: SpriteWrapper, isDestroyable: boolean) {
-        this.spriteWrapper = spriteWrapper;
+    protected constructor(boardSprite: BoardSprite, isDestroyable: boolean) {
+        this.boardSprite = boardSprite;
         this.isDestroyable = isDestroyable;
     }
 
     protected resetPosition(x: number, y: number): void {
-        this.spriteWrapper.sprite.x = x;
-        this.spriteWrapper.sprite.y = y;
+        this.boardSprite.sprite.x = x;
+        this.boardSprite.sprite.y = y;
     }
 
     public destroy(): void {
@@ -31,17 +31,17 @@ export abstract class BoardElement {
 export class MovableBoardElement extends BoardElement {
     protected speed: number;
 
-    constructor(spriteWrapper: SpriteWrapper, isDestroyable: boolean, speed: number) {
-        super(spriteWrapper, isDestroyable);
+    constructor(boardSprite: BoardSprite, isDestroyable: boolean, speed: number) {
+        super(boardSprite, isDestroyable);
         this.speed = speed;
     }
 
     move(direction: Direction) {
         switch (direction) {
-            case Direction.UP: this.spriteWrapper.sprite.y += 1; break;
-            case Direction.DOWN: this.spriteWrapper.sprite.y -= 1; break;
-            case Direction.RIGHT: this.spriteWrapper.sprite.x += 1; break;
-            case Direction.LEFT: this.spriteWrapper.sprite.x -= 1; break;
+            case Direction.UP: this.boardSprite.sprite.y += 1; break;
+            case Direction.DOWN: this.boardSprite.sprite.y -= 1; break;
+            case Direction.RIGHT: this.boardSprite.sprite.x += 1; break;
+            case Direction.LEFT: this.boardSprite.sprite.x -= 1; break;
         }
     }
 }
@@ -54,32 +54,32 @@ export class MovableBoardElement extends BoardElement {
 // }
 
 export class Eagle extends BoardElement {
-    constructor(spriteWrapper: SpriteWrapper) {
-        super(spriteWrapper, true);
+    constructor(boardSprite: BoardSprite) {
+        super(boardSprite, true);
     }
 }
 
 export class Wall extends BoardElement {
-    constructor(spriteWrapper: SpriteWrapper) {
-        super(spriteWrapper, true);
+    constructor(boardSprite: BoardSprite) {
+        super(boardSprite, true);
     }
 }
 
 export class Block extends BoardElement {
-    constructor(spriteWrapper: SpriteWrapper) {
-        super(spriteWrapper, false);
+    constructor(boardSprite: BoardSprite) {
+        super(boardSprite, false);
     }
 }
 
 export class Water extends BoardElement {
-    constructor(spriteWrapper: SpriteWrapper) {
-        super(spriteWrapper, false);
+    constructor(boardSprite: BoardSprite) {
+        super(boardSprite, false);
     }
 }
 
 export class Leaf extends BoardElement {
-    constructor(spriteWrapper: SpriteWrapper) {
-        super(spriteWrapper, false);
+    constructor(boardSprite: BoardSprite) {
+        super(boardSprite, false);
     }
 }
 

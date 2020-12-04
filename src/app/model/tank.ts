@@ -1,5 +1,5 @@
 import {MovableBoardElement} from "./boardElement";
-import {SpriteWrapper} from "./spriteWrapper";
+import {BoardSprite, SpriteWrapper} from "./spriteWrapper";
 
 export class Tank extends MovableBoardElement {
     readonly startX: number;
@@ -10,11 +10,11 @@ export class Tank extends MovableBoardElement {
 
     readonly tankType: TankType;
 
-    constructor(spriteWrapper: SpriteWrapper, tankType: TankType) {
-        super(spriteWrapper, true, 2);
+    constructor(boardSprite: BoardSprite, tankType: TankType) {
+        super(boardSprite, true, 2);
 
-        this.startX = spriteWrapper.sprite.x;
-        this.startY = spriteWrapper.sprite.y;
+        this.startX = boardSprite.sprite.x;
+        this.startY = boardSprite.sprite.y;
 
         this.tankType = tankType;
 

@@ -47,11 +47,11 @@ export class BoardSprite extends SpriteWrapper {
     }
 
     static getSpriteCoordinate(coordinate: number): number {
-        return (coordinate - 1) * BoardSprite.size;
+        return coordinate * BoardSprite.size;
     }
 
     static getBoardCoordinate(coordinate: number): number {
-        return coordinate / BoardSprite.size + 1;
+        return coordinate / BoardSprite.size;
     }
 }
 
