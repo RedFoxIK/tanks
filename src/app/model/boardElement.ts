@@ -34,14 +34,28 @@ export class MovableBoardElement extends BoardElement {
     constructor(boardSprite: BoardSprite, isDestroyable: boolean, speed: number) {
         super(boardSprite, isDestroyable);
         this.speed = speed;
+        this.boardSprite.sprite.anchor.set(0.5);
     }
 
     move(direction: Direction) {
         switch (direction) {
-            case Direction.UP: this.boardSprite.sprite.y += 1; break;
-            case Direction.DOWN: this.boardSprite.sprite.y -= 1; break;
-            case Direction.RIGHT: this.boardSprite.sprite.x += 1; break;
-            case Direction.LEFT: this.boardSprite.sprite.x -= 1; break;
+            case Direction.UP:
+                this.boardSprite.sprite.rotation = 0;
+                this.boardSprite.changeY(this.boardSprite.boardY - 0.05);
+                break;
+            case Direction.DOWN:
+                this.boardSprite.sprite.rotation = Math.PI * 2 * 0.5;
+                this.boardSprite.changeY(this.boardSprite.boardY + 0.05);
+                break;
+            case Direction.RIGHT:
+                this.boardSprite.sprite.rotation = Math.PI * 2 * 0.25;
+                this.boardSprite.changeX(this.boardSprite.boardX + 0.05);
+
+                break;
+            case Direction.LEFT:
+                this.boardSprite.sprite.rotation = -Math.PI * 2 * 0.25;
+                this.boardSprite.changeX(this.boardSprite.boardX - 0.05);
+                break;
         }
     }
 }
@@ -83,10 +97,13 @@ export class Leaf extends BoardElement {
     }
 }
 
+//TODO: remove string?
 export enum BoardObject {
     BLOCK = "BLOCK",
     WATER = "WATER",
     LEAF = "LEAF",
     WALL = "WALL",
     EAGLE = "EAGLE",
+    TANK = "TANK",
+    ENEMY_TANK = "ENEMY_TANK"
 }

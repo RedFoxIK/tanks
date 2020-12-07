@@ -1,6 +1,7 @@
 import {Game, GameState} from "../model/game";
 import * as PIXI from 'pixi.js';
 import {BoardGeneratorService} from "../service/boardGenerator.service";
+import {Direction} from "../model/direction";
 
 export class GameController {
     readonly game: Game;
@@ -15,6 +16,7 @@ export class GameController {
     }
 
     private resolveState(state: GameState) {
+        console.log(this.boardGeneratorService);
         //TODO clear scene between statuses?
         switch (state) {
             case GameState.CREATED:
@@ -25,7 +27,40 @@ export class GameController {
                 break;
             case GameState.IN_PROGRESS:
                 this.boardGeneratorService.generateBoard();
+                this.addEventListeners();
                 break;
         }
+    }
+
+    private addEventListeners() {
+        window.addEventListener('keydown', (e) => this.keyDown(e))
+        window.addEventListener('keyup', (e) => this.keyUp(e))
+    }
+
+    private keyDown(e) {
+        console.log(this.boardGeneratorService);
+        console.log(e.code);
+        switch (e.code) {
+            case "ArrowUp":
+            case "KeyW":
+                this.boardGeneratorService.moveTank(Direction.UP);
+                break;
+            case "ArrowDown":
+            case "KeyS":
+                this.boardGeneratorService.moveTank(Direction.DOWN);
+                break;
+            case "ArrowLeft":
+            case "KeyA":
+                this.boardGeneratorService.moveTank(Direction.LEFT);
+                break;
+            case "ArrowRight":
+            case "KeyD":
+                this.boardGeneratorService.moveTank(Direction.RIGHT);
+                break;
+        }
+    }
+
+    private keyUp(e) {
+        console.log("keyUp = " + e);
     }
 }

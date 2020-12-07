@@ -24,8 +24,8 @@ export class SpriteWrapper {
 
 export class BoardSprite extends SpriteWrapper {
     static size = 24;
-    private boardX: number;
-    private boardY: number;
+    boardX: number;
+    boardY: number;
 
     constructor(sprite: Sprite, x: number, y: number) {
         const stageX = BoardSprite.getSpriteCoordinate(x);

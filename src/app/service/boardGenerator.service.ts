@@ -1,12 +1,15 @@
 import {SpriteService} from "./sprite.service";
-import {BoardAsset, ButtonAsset, LoaderAsset} from "../model/asset";
+import {BoardAsset, ButtonAsset, LoaderAsset, TankAsset} from "../model/asset";
 import PIXI from "pixi.js";
 import {Game, GameState} from "../model/game";
-// @ts-ignore
-import boarMapResponse from '../api/board-map.json';
 import {BoardObject} from "../model/boardElement";
 import {BoardSprite} from "../model/spriteWrapper";
 import {BoardElementsFactory} from "./boardElements.factory";
+//TODO: move to controller
+import boarMapResponse from "../api/board-map.json";
+import tanksResponse from "../api/tanks.json";
+import {Tank, TankType} from "../model/tank";
+import {Direction} from "../model/direction";
 
 export class BoardGeneratorService {
     readonly boardSize = 32;
@@ -14,10 +17,13 @@ export class BoardGeneratorService {
     private spriteService: SpriteService;
     private game: Game;
     private board: BoardSprite | null [][];
+    private playerTank: Tank;
+    private enemies: Tank[];
 
     constructor(game: Game, app: PIXI.Application, view: HTMLElement) {
         this.game = game;
         this.spriteService = new SpriteService(app, view)
+        this.enemies = [];
         this.boardInitialize();
     }
 
@@ -56,6 +62,27 @@ export class BoardGeneratorService {
                 this.createBoardElem(BoardAsset, BoardAsset[boarMapResponse[key].enumValue], asset.x, asset.y, boarMapResponse[key].boardElem)
             });
         })
+
+        this.createTank(TankAsset, TankAsset.TANK, tanksResponse.player.x, tanksResponse.player.y, TankType.PLAYER);
+        tanksResponse.enemies.forEach(enemy => {
+            this.createTank(TankAsset, TankAsset.ENEMY_TANK_1, enemy.x, enemy.y, TankType.ENEMY);
+        })
+    }
+
+    createTank(assetEnum, assetEnumValue: string, x: number, y: number, tankType: TankType) {
+        const boardSprite = this.spriteService.createBoardElem(assetEnum, assetEnumValue, x, y);
+        const tank = new Tank(boardSprite, tankType);
+        if (tankType == TankType.PLAYER) {
+           this.playerTank = tank;
+        } else {
+            this.enemies.push(tank);
+        }
+    }
+
+    moveTank(direction: Direction) {
+        console.log('MOVE = ' + direction);
+       this.playerTank.move(direction);
+       this.spriteService.rerenderScene();
     }
 
     createBoardElem(assetEnum, assetEnumValue: string, x: number, y: number, boardObjectName: string) {

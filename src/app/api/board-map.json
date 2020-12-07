@@ -204,6 +204,33 @@
       }
     ]
   },
+  "walls1": {
+    "enum": "BOARD_ASSET",
+    "enumValue": "WALL_1",
+    "boardElem": "WALL",
+    "assets": [
+      {
+        "x": 14,
+        "y": 30
+      },
+      {
+        "x": 14,
+        "y": 29
+      },
+      {
+        "x": 15,
+        "y": 29
+      },
+      {
+        "x": 16,
+        "y": 29
+      },
+      {
+        "x": 16,
+        "y": 30
+      }
+    ]
+  },
   "eagle": {
     "enum": "BOARD_ASSET",
     "enumValue": "EAGLE",
