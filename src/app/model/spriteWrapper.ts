@@ -17,6 +17,7 @@ export class SpriteWrapper {
         }
     }
 
+
     changeWidth(width: number) {
         this.sprite.width = width;
     }
@@ -26,32 +27,40 @@ export class BoardSprite extends SpriteWrapper {
     static size = 24;
     boardX: number;
     boardY: number;
+    rotatable: boolean
 
-    constructor(sprite: Sprite, x: number, y: number) {
-        const stageX = BoardSprite.getSpriteCoordinate(x);
-        const stageY = BoardSprite.getSpriteCoordinate(y);
+    constructor(sprite: Sprite, x: number, y: number, rotatable?: boolean) {
+        const stageX = BoardSprite.getSpriteCoordinate(x, rotatable);
+        const stageY = BoardSprite.getSpriteCoordinate(y, rotatable);
         super(sprite, stageX, stageY, BoardSprite.size, BoardSprite.size);
 
         this.boardX = x;
         this.boardY = y;
+        this.rotatable = rotatable;
+
+        if (rotatable) {
+            this.sprite.anchor.set(0.5);
+        }
     }
 
     changeX(boardX: number): void {
         this.boardX = boardX;
-        this.sprite.x = BoardSprite.getSpriteCoordinate(this.boardX);
+        this.sprite.x = BoardSprite.getSpriteCoordinate(this.boardX, this.rotatable);
     }
 
     changeY(boardY: number): void {
         this.boardY = boardY;
-        this.sprite.y = BoardSprite.getSpriteCoordinate(this.boardY);
+        this.sprite.y = BoardSprite.getSpriteCoordinate(this.boardY, this.rotatable);
     }
 
-    static getSpriteCoordinate(coordinate: number): number {
-        return coordinate * BoardSprite.size;
+    static getSpriteCoordinate(coordinate: number, rotatable?: boolean): number {
+        const corrector = rotatable ?  BoardSprite.size / 2 : 0;
+        return coordinate * BoardSprite.size + corrector;
     }
 
-    static getBoardCoordinate(coordinate: number): number {
-        return coordinate / BoardSprite.size;
+    static getBoardCoordinate(coordinate: number, rotatable?: boolean): number {
+        const corrector = rotatable ?  BoardSprite.size / 2 : 0;
+        return (coordinate - corrector) / BoardSprite.size;
     }
 }
 

@@ -38,8 +38,6 @@ export class GameController {
     }
 
     private keyDown(e) {
-        console.log(this.boardGeneratorService);
-        console.log(e.code);
         switch (e.code) {
             case "ArrowUp":
             case "KeyW":
@@ -61,6 +59,5 @@ export class GameController {
     }
 
     private keyUp(e) {
-        console.log("keyUp = " + e);
     }
 }

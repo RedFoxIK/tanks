@@ -34,29 +34,38 @@ export class MovableBoardElement extends BoardElement {
     constructor(boardSprite: BoardSprite, isDestroyable: boolean, speed: number) {
         super(boardSprite, isDestroyable);
         this.speed = speed;
-        this.boardSprite.sprite.anchor.set(0.5);
     }
 
-    move(direction: Direction) {
+    //TODO: 2 functions
+    move(direction: Direction, check: boolean): {x: number, y: number} {
+        let newX = this.boardSprite.boardX;
+        let newY = this.boardSprite.boardY;
+        let rotation = this.boardSprite.sprite.rotation;
+
         switch (direction) {
             case Direction.UP:
-                this.boardSprite.sprite.rotation = 0;
-                this.boardSprite.changeY(this.boardSprite.boardY - 0.05);
+                rotation = 0;
+                newY -= 0.05;
                 break;
             case Direction.DOWN:
-                this.boardSprite.sprite.rotation = Math.PI * 2 * 0.5;
-                this.boardSprite.changeY(this.boardSprite.boardY + 0.05);
+                rotation = Math.PI * 2 * 0.5;
+                newY += 0.05;
                 break;
             case Direction.RIGHT:
-                this.boardSprite.sprite.rotation = Math.PI * 2 * 0.25;
-                this.boardSprite.changeX(this.boardSprite.boardX + 0.05);
-
+                rotation = Math.PI * 2 * 0.25;
+                newX += 0.05;
                 break;
             case Direction.LEFT:
-                this.boardSprite.sprite.rotation = -Math.PI * 2 * 0.25;
-                this.boardSprite.changeX(this.boardSprite.boardX - 0.05);
+                rotation = -Math.PI * 2 * 0.25;
+                newX -= 0.05;
                 break;
         }
+        if (!check) {
+            this.boardSprite.sprite.rotation = rotation;
+            this.boardSprite.changeX(newX);
+            this.boardSprite.changeY(newY);
+        }
+        return {x: newX, y: newY};
     }
 }
 
