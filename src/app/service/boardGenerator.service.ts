@@ -1,6 +1,7 @@
 import {SpriteService} from "./sprite.service";
 import {BoardAsset, ButtonAsset, LoaderAsset, TankAsset} from "../model/asset";
-import PIXI from "pixi.js";
+import * as PIXI from "pixi.js";
+import { default as PIXI_SOUND } from 'pixi-sound';
 import {Game, GameState} from "../model/game";
 import {BoardObject} from "../model/boardElement";
 import {BoardSprite} from "../model/spriteWrapper";
@@ -67,6 +68,60 @@ export class BoardGeneratorService {
                 this.createBoardElem(BoardAsset, BoardAsset[boarMapResponse[key].enumValue], asset.x, asset.y, boarMapResponse[key].boardElem)
             });
         })
+        let sheet = this.spriteService.loader.resources["EXPLODE_ANIM"].spritesheet;
+        console.log( this.spriteService.loader.resources);
+        console.log(sheet);
+        const anim = new PIXI.AnimatedSprite(sheet.animations['explode'])
+        console.log(anim);
+        anim.animationSpeed = 0.5;
+        anim.x = 200;
+        anim.y = 300;
+        anim.width = 48;
+        anim.height = 48;
+        anim.loop = false;
+        this.spriteService.stage.addChild(anim);
+        anim.play();
+        anim.onComplete = () => this.spriteService.stage.removeChild(anim);
+
+        let sheet3 = this.spriteService.loader.resources["APPEAR_ANIM"].spritesheet;
+
+        const anim3 = new PIXI.AnimatedSprite(sheet3.animations['appear']);
+        anim3.animationSpeed = 0.5;
+        anim3.x = 64;
+        anim3.y = 64;
+        anim3.width = 48;
+        anim3.loop = false;
+        anim3.height = 48;
+        this.spriteService.stage.addChild(anim3);
+        anim3.onComplete = () => this.spriteService.stage.removeChild(anim3);
+        anim3.play();
+
+        let sheet2 = this.spriteService.loader.resources["EXPLODE_SMALL_ANIM"].spritesheet;
+
+        const anim2 = new PIXI.AnimatedSprite(sheet2.animations['small'])
+        anim2.anchor.set(0.5);
+        anim2.animationSpeed = 0.2;
+        anim2.x = 600;
+        anim2.y = 300;
+        anim2.loop = false;
+        anim2.width = 48;
+        anim2.height = 48;
+        this.spriteService.stage.addChild(anim2);
+        anim2.play();
+        anim2.onComplete = () => this.spriteService.stage.removeChild(anim2);
+
+
+        // PIXI_SOUND.add('hit', 'assets/sounds/hit.wav');
+        // PIXI_SOUND.play('hit');
+
+        // PIXI_SOUND.add('bonus', 'assets/sounds/bonus.wav');
+        // PIXI_SOUND.play('bonus');
+
+        // PIXI_SOUND.add('lose', 'assets/sounds/lose.wav');
+        // PIXI_SOUND.play('lose');
+        //
+        // PIXI_SOUND.add('win', 'assets/sounds/win.wav');
+        // PIXI_SOUND.play('win');
     }
 
     createTank(assetEnum, assetEnumValue: string, x: number, y: number, tankType: TankType) {

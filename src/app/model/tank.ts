@@ -20,6 +20,10 @@ export class Tank extends MovableBoardElement {
 
         this.lifeAmount = 1;
         this.isImmortal = false;
+
+        if (tankType === TankType.ENEMY) {
+            this.boardSprite.sprite.rotation = Math.PI * 2 * 0.5;
+        }
     }
 
     addLife(): void {

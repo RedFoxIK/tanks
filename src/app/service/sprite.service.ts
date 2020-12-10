@@ -2,8 +2,6 @@ import * as PIXI from "pixi.js";
 import {BoardSprite, SpriteWrapper} from "../model/spriteWrapper";
 import {EnumUtilsService} from "./enum-utils.service";
 import {BoardAsset, BonusAsset, ButtonAsset, SoundAsset, TankAsset} from "../model/asset";
-import {BoardObject} from "../model/boardElement";
-import {BoardElementsFactory} from "./boardElements.factory";
 import {Sprite} from "pixi.js";
 
 export class SpriteService {
@@ -31,7 +29,11 @@ export class SpriteService {
         EnumUtilsService.applyFunction((key, value) => this.loader.add(key, value),
             ButtonAsset, BoardAsset, BonusAsset, TankAsset, SoundAsset);
 
+        this.loader.add('EXPLODE_ANIM', 'assets/images/animations/explode.json')
+        this.loader.add('EXPLODE_SMALL_ANIM', 'assets/images/animations/small_explode.json')
+        this.loader.add('APPEAR_ANIM', 'assets/images/animations/appear.json')
         this.loader.load();
+
 
         this.loader.onProgress.add((e) => onProgressFn(e));
         this.loader.onComplete.add(() => {
