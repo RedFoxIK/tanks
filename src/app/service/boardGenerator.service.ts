@@ -1,13 +1,13 @@
 import {SpriteService} from "./sprite.service";
-import {BoardAsset, ButtonAsset, LoaderAsset, TankAsset} from "../model/asset";
+import {AnimationAsset, BoardAsset, ButtonAsset, LoaderAsset, SoundAsset, TankAsset} from "../model/asset";
 import * as PIXI from "pixi.js";
-import { default as PIXI_SOUND } from 'pixi-sound';
 import {Game, GameState} from "../model/game";
-import {BoardObject} from "../model/boardElement";
+import {BoardElement, BoardObject} from "../model/boardElement";
 import {BoardSprite} from "../model/spriteWrapper";
 import {BoardElementsFactory} from "./boardElements.factory";
+import { default as PIXI_SOUND } from 'pixi-sound';
 //TODO: move to controller
-import boarMapResponse from "../api/board-map.json";
+import boardMapResponse from "../api/board-map.json";
 import tanksResponse from "../api/tanks.json";
 import {Tank, TankType} from "../model/tank";
 import {Direction} from "../model/direction";
@@ -17,7 +17,7 @@ export class BoardGeneratorService {
 
     private spriteService: SpriteService;
     private game: Game;
-    private board: BoardSprite | null [][];
+    private board: BoardElement | null [][];
     private playerTank: Tank;
     private enemies: Tank[];
 
@@ -51,6 +51,7 @@ export class BoardGeneratorService {
     }
 
     public generateBoard() {
+
         for (let i = 0; i < 32; i++) {
             this.createBoardElem(BoardAsset, BoardAsset.BLOCK, 0, i, BoardObject.BLOCK);
             this.createBoardElem(BoardAsset, BoardAsset.BLOCK, 31, i, BoardObject.BLOCK);
@@ -58,74 +59,23 @@ export class BoardGeneratorService {
             this.createBoardElem(BoardAsset, BoardAsset.BLOCK, i, 31, BoardObject.BLOCK);
         }
 
+        Object.keys(boardMapResponse).forEach(key => {
+            boardMapResponse[key].assets.forEach(asset => {
+                this.createBoardElem(BoardAsset, BoardAsset[boardMapResponse[key].enumValue], asset.x, asset.y, boardMapResponse[key].boardElem)
+            });
+        })
+
         this.createTank(TankAsset, TankAsset.TANK, tanksResponse.player.x, tanksResponse.player.y, TankType.PLAYER);
         tanksResponse.enemies.forEach(enemy => {
             this.createTank(TankAsset, TankAsset.ENEMY_TANK_1, enemy.x, enemy.y, TankType.ENEMY);
         })
+        this.spriteService.rerenderScene();
 
-        Object.keys(boarMapResponse).forEach(key => {
-            boarMapResponse[key].assets.forEach(asset => {
-                this.createBoardElem(BoardAsset, BoardAsset[boarMapResponse[key].enumValue], asset.x, asset.y, boarMapResponse[key].boardElem)
-            });
-        })
-        let sheet = this.spriteService.loader.resources["EXPLODE_ANIM"].spritesheet;
-        console.log( this.spriteService.loader.resources);
-        console.log(sheet);
-        const anim = new PIXI.AnimatedSprite(sheet.animations['explode'])
-        console.log(anim);
-        anim.animationSpeed = 0.5;
-        anim.x = 200;
-        anim.y = 300;
-        anim.width = 48;
-        anim.height = 48;
-        anim.loop = false;
-        this.spriteService.stage.addChild(anim);
-        anim.play();
-        anim.onComplete = () => this.spriteService.stage.removeChild(anim);
-
-        let sheet3 = this.spriteService.loader.resources["APPEAR_ANIM"].spritesheet;
-
-        const anim3 = new PIXI.AnimatedSprite(sheet3.animations['appear']);
-        anim3.animationSpeed = 0.5;
-        anim3.x = 64;
-        anim3.y = 64;
-        anim3.width = 48;
-        anim3.loop = false;
-        anim3.height = 48;
-        this.spriteService.stage.addChild(anim3);
-        anim3.onComplete = () => this.spriteService.stage.removeChild(anim3);
-        anim3.play();
-
-        let sheet2 = this.spriteService.loader.resources["EXPLODE_SMALL_ANIM"].spritesheet;
-
-        const anim2 = new PIXI.AnimatedSprite(sheet2.animations['small'])
-        anim2.anchor.set(0.5);
-        anim2.animationSpeed = 0.2;
-        anim2.x = 600;
-        anim2.y = 300;
-        anim2.loop = false;
-        anim2.width = 48;
-        anim2.height = 48;
-        this.spriteService.stage.addChild(anim2);
-        anim2.play();
-        anim2.onComplete = () => this.spriteService.stage.removeChild(anim2);
-
-
-        // PIXI_SOUND.add('hit', 'assets/sounds/hit.wav');
-        // PIXI_SOUND.play('hit');
-
-        // PIXI_SOUND.add('bonus', 'assets/sounds/bonus.wav');
-        // PIXI_SOUND.play('bonus');
-
-        // PIXI_SOUND.add('lose', 'assets/sounds/lose.wav');
-        // PIXI_SOUND.play('lose');
-        //
-        // PIXI_SOUND.add('win', 'assets/sounds/win.wav');
-        // PIXI_SOUND.play('win');
+        this.spriteService.playSound(SoundAsset.WIN_SOUND);
     }
 
     createTank(assetEnum, assetEnumValue: string, x: number, y: number, tankType: TankType) {
-        const boardSprite = this.spriteService.createBoardElem(assetEnum, assetEnumValue, x, y, true);
+        const boardSprite = this.spriteService.createBoardElem(assetEnum, assetEnumValue, x, y, true, true);
         const tank = new Tank(boardSprite, tankType);
         if (tankType == TankType.PLAYER) {
             this.playerTank = tank;
@@ -143,28 +93,28 @@ export class BoardGeneratorService {
     }
 
     isCollisionDetected(newX: number, newY: number, direction: Direction): boolean {
+        let leftCeil;
+        let rightCeil;
+
         switch (direction) {
             case Direction.UP:
-                if ((newX * 10) % 10 == 0) {
-                    return this.board[newX][Math.floor(newY)] != null;
-                }
-                return this.board[Math.floor(newX)][Math.floor(newY)] != null || this.board[Math.ceil(newX)][Math.floor(newY)];
+                leftCeil = this.board[Math.floor(newX)][Math.floor(newY)];
+                rightCeil = this.board[Math.ceil(newX)][Math.floor(newY)];
+                break;
             case Direction.DOWN:
-                if ((newX * 10) % 10 == 0) {
-                    return this.board[newX][Math.ceil(newY)] != null;
-                }
-                return this.board[Math.floor(newX)][Math.ceil(newY)] != null || this.board[Math.ceil(newX)][Math.ceil(newY)] != null;
+                leftCeil = this.board[Math.floor(newX)][Math.ceil(newY)];
+                rightCeil = this.board[Math.ceil(newX)][Math.ceil(newY)];
+                break;
             case Direction.LEFT:
-                if ((newY * 10) % 10 == 0) {
-                    return this.board[Math.floor(newX)][newY] != null;
-                }
-                return this.board[Math.floor(newX)][Math.floor(newY)] != null || this.board[Math.floor(newX)][Math.ceil(newY)] != null;
+                leftCeil = this.board[Math.floor(newX)][Math.floor(newY)];
+                rightCeil = this.board[Math.floor(newX)][Math.ceil(newY)];
+                break;
             case Direction.RIGHT:
-                if ((newY * 10) % 10 == 0) {
-                    return this.board[Math.ceil(newX)][newY] != null;
-                }
-                return this.board[Math.ceil(newX)][Math.floor(newY)] != null || this.board[Math.ceil(newX)][Math.ceil(newY)] != null;
+                leftCeil = this.board[Math.ceil(newX)][Math.floor(newY)];
+                rightCeil = this.board[Math.ceil(newX)][Math.ceil(newY)];
+                break;
         }
+        return (leftCeil != null && leftCeil.isBarrier) || (rightCeil != null && rightCeil.isBarrier);
     }
 
     createBoardElem(assetEnum, assetEnumValue: string, x: number, y: number, boardObjectName: string) {

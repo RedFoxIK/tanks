@@ -16,7 +16,6 @@ export class GameController {
     }
 
     private resolveState(state: GameState) {
-        console.log(this.boardGeneratorService);
         //TODO clear scene between statuses?
         switch (state) {
             case GameState.CREATED:

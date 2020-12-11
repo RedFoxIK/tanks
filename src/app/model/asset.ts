@@ -37,11 +37,17 @@ export enum LoaderAsset {
     LOADER_BAR = 'assets/images/loader/loader-bar.png'
 }
 
+export enum AnimationAsset {
+    EXPLODE = 'assets/images/animations/explode.json',
+    SMALL_EXPLODE = 'assets/images/animations/small_explode.json',
+    APPEAR = 'assets/images/animations/appear.json',
+}
+
 export enum SoundAsset {
-    BONUS = 'assets/sounds/bonus.wav',
-    EXPLODE = 'assets/sounds/explode.wav',
-    HIT = 'assets/sounds/hit.wav',
-    LOSE = 'assets/sounds/lose.wav',
-    SHOT = 'assets/sounds/shot.wav',
-    WIN = 'assets/sounds/win.wav',
+    BONUS_SOUND = 'assets/sounds/bonus.wav',
+    EXPLODE_SOUND = 'assets/sounds/explode.wav',
+    HIT_SOUND = 'assets/sounds/hit.wav',
+    LOSE_SOUND = 'assets/sounds/lose.wav',
+    SHOT_SOUND = 'assets/sounds/shot.wav',
+    WIN_SOUND = 'assets/sounds/win.wav',
 }

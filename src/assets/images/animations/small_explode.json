@@ -73,7 +73,7 @@
 	"anchor": {"x":0,"y":0}
 }},
 "animations": {
-	"small": ["small-0.png","small-1.png","small-2.png","small-3.png","small-4.png","small-5.png","small-6.png","small-7.png"]
+	"animation": ["small-0.png","small-1.png","small-2.png","small-3.png","small-4.png","small-5.png","small-6.png","small-7.png"]
 },
 "meta": {
 	"app": "https://www.codeandweb.com/texturepacker",

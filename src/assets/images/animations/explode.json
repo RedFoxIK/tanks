@@ -145,7 +145,7 @@
 	"anchor": {"x":0,"y":0}
 }},
 "animations": {
-	"explode": ["explode-0.png","explode-1.png","explode-2.png","explode-3.png","explode-4.png","explode-5.png","explode-6.png","explode-7.png","explode-8.png","explode-9.png","explode-10.png","explode-11.png","explode-12.png","explode-13.png","explode-14.png","explode-15.png"]
+	"animation": ["explode-0.png","explode-1.png","explode-2.png","explode-3.png","explode-4.png","explode-5.png","explode-6.png","explode-7.png","explode-8.png","explode-9.png","explode-10.png","explode-11.png","explode-12.png","explode-13.png","explode-14.png","explode-15.png"]
 },
 "meta": {
 	"app": "https://www.codeandweb.com/texturepacker",

@@ -91,7 +91,7 @@
 	"anchor": {"x":0,"y":0}
 }},
 "animations": {
-	"appear": ["appear-0.png","appear-1.png","appear-2.png","appear-3.png","appear-4.png","appear-5.png","appear-6.png","appear-7.png","appear-8.png","appear-9.png"]
+	"animation": ["appear-0.png","appear-1.png","appear-2.png","appear-3.png","appear-4.png","appear-5.png","appear-6.png","appear-7.png","appear-8.png","appear-9.png"]
 },
 "meta": {
 	"app": "https://www.codeandweb.com/texturepacker",

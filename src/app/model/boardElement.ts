@@ -4,10 +4,12 @@ import {BoardSprite} from "./spriteWrapper";
 export abstract class BoardElement {
     protected boardSprite: BoardSprite;
     readonly isDestroyable: boolean;
+    readonly isBarrier: boolean;
 
-    protected constructor(boardSprite: BoardSprite, isDestroyable: boolean) {
+    protected constructor(boardSprite: BoardSprite, isDestroyable: boolean, isBarrier: boolean) {
         this.boardSprite = boardSprite;
         this.isDestroyable = isDestroyable;
+        this.isBarrier = isBarrier;
     }
 
     protected resetPosition(x: number, y: number): void {
@@ -32,7 +34,7 @@ export class MovableBoardElement extends BoardElement {
     protected speed: number;
 
     constructor(boardSprite: BoardSprite, isDestroyable: boolean, speed: number) {
-        super(boardSprite, isDestroyable);
+        super(boardSprite, isDestroyable, true);
         this.speed = speed;
     }
 
@@ -78,31 +80,32 @@ export class MovableBoardElement extends BoardElement {
 
 export class Eagle extends BoardElement {
     constructor(boardSprite: BoardSprite) {
-        super(boardSprite, true);
+        super(boardSprite, true, true);
     }
 }
 
 export class Wall extends BoardElement {
     constructor(boardSprite: BoardSprite) {
-        super(boardSprite, true);
+        super(boardSprite, true, true);
     }
 }
 
 export class Block extends BoardElement {
     constructor(boardSprite: BoardSprite) {
-        super(boardSprite, false);
+        super(boardSprite, false, true);
     }
 }
 
 export class Water extends BoardElement {
     constructor(boardSprite: BoardSprite) {
-        super(boardSprite, false);
+        super(boardSprite, false, true);
     }
 }
 
 export class Leaf extends BoardElement {
     constructor(boardSprite: BoardSprite) {
-        super(boardSprite, false);
+        super(boardSprite, false, false);
+        this.boardSprite.sprite.zIndex = 100;
     }
 }
 

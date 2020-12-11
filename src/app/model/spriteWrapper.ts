@@ -29,10 +29,11 @@ export class BoardSprite extends SpriteWrapper {
     boardY: number;
     rotatable: boolean
 
-    constructor(sprite: Sprite, x: number, y: number, rotatable?: boolean) {
+    constructor(sprite: Sprite, x: number, y: number, rotatable?: boolean, scale?: number) {
         const stageX = BoardSprite.getSpriteCoordinate(x, rotatable);
         const stageY = BoardSprite.getSpriteCoordinate(y, rotatable);
-        super(sprite, stageX, stageY, BoardSprite.size, BoardSprite.size);
+        const size = scale ? scale * BoardSprite.size : BoardSprite.size;
+        super(sprite, stageX, stageY, size, size);
 
         this.boardX = x;
         this.boardY = y;
