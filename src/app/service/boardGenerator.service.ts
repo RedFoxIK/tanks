@@ -1,5 +1,5 @@
 import {SpriteService} from "./sprite.service";
-import {BoardAsset, ButtonAsset, LoaderAsset, SoundAsset, TankAsset} from "../model/asset";
+import {ButtonAsset, LoaderAsset, SoundAsset, TankAsset} from "../model/asset";
 import * as PIXI from "pixi.js";
 import {Game, GameState} from "../model/game";
 import {BoardElement, BoardObject} from "../model/boardElement";
@@ -75,7 +75,7 @@ export class BoardGeneratorService {
     }
 
     createTank(assetEnum, assetEnumValue: string, x: number, y: number, tankType: TankType) {
-        const boardSprite = this.spriteService.createBoardElem(assetEnum, assetEnumValue, x, y, true, true);
+        const boardSprite = this.spriteService.createBoardElem(assetEnum, assetEnumValue, x, y, 1,true, true);
         const tank = new Tank(boardSprite, tankType);
         if (tankType == TankType.PLAYER) {
             this.playerTank = tank;
@@ -94,8 +94,17 @@ export class BoardGeneratorService {
     }
 
     public shoot() {
-        const boardSprite = this.spriteService.createBoardElem(TankAsset, TankAsset.BULLET, this.playerTank.getX(), this.playerTank.getY());
-        // const bullet = new Bullet(boardSprite, this.playerTank.tankType);
+        const boardSprite = this.spriteService.createBoardElem(TankAsset, TankAsset.BULLET, this.playerTank.getX(), this.playerTank.getY(), 0.5);
+        const newBulletCreated = this.playerTank.createBullet(boardSprite);
+        if (!newBulletCreated) {
+            this.spriteService.removeSprites(boardSprite);
+        } else {
+            this.spriteService.playSound(SoundAsset.SHOOT_SOUND);
+        }
+    }
+
+    everyTick(delta: any) {
+        this.playerTank.moveBullet();
     }
 
     private isCollisionDetected(newX: number, newY: number, direction: Direction): boolean {

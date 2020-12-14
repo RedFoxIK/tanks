@@ -49,9 +49,9 @@ export class SpriteService {
         return spriteWrapper;
     }
 
-    createBoardElem(assetEnum: any, assetValue: string, x: number, y: number, rotatable?: boolean, animation?: boolean): BoardSprite {
+    createBoardElem(assetEnum: any, assetValue: string, x: number, y: number, scale?: number, rotatable?: boolean, animation?: boolean): BoardSprite {
         const sprite = this.createSprite(assetEnum, assetValue);
-        const boardSprite = new BoardSprite(sprite, x, y, rotatable);
+        const boardSprite = new BoardSprite(sprite, x, y, rotatable, scale);
 
         !animation ? this.addSpriteToBoard(boardSprite) :
             this.playAnimation(AnimationAsset.APPEAR, boardSprite.sprite.x, boardSprite.sprite.y, () => this.addSpriteToBoard(boardSprite));

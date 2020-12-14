@@ -28,16 +28,21 @@ export class BoardSprite extends SpriteWrapper {
     boardX: number;
     boardY: number;
     rotatable: boolean
+    scale: number;
 
-    constructor(sprite: Sprite, x: number, y: number, rotatable?: boolean, scale?: number) {
-        const stageX = BoardSprite.getSpriteCoordinate(x, rotatable);
-        const stageY = BoardSprite.getSpriteCoordinate(y, rotatable);
-        const size = scale ? scale * BoardSprite.size : BoardSprite.size;
+    constructor(sprite: Sprite, x: number, y: number, rotatable?: boolean, scale: number = 1) {
+        const stageX = BoardSprite.getSpriteCoordinate(x, scale, rotatable);
+        const stageY = BoardSprite.getSpriteCoordinate(y, scale, rotatable);
+
+        console.log(stageX + ' -- ' + stageY);
+
+        const size = scale * BoardSprite.size;
         super(sprite, stageX, stageY, size, size);
 
         this.boardX = x;
         this.boardY = y;
         this.rotatable = rotatable;
+        this.scale = scale;
 
         if (rotatable) {
             this.sprite.anchor.set(0.5);
@@ -46,17 +51,18 @@ export class BoardSprite extends SpriteWrapper {
 
     changeX(boardX: number): void {
         this.boardX = boardX;
-        this.sprite.x = BoardSprite.getSpriteCoordinate(this.boardX, this.rotatable);
+        this.sprite.x = BoardSprite.getSpriteCoordinate(this.boardX, this.scale, this.rotatable);
     }
 
     changeY(boardY: number): void {
         this.boardY = boardY;
-        this.sprite.y = BoardSprite.getSpriteCoordinate(this.boardY, this.rotatable);
+        this.sprite.y = BoardSprite.getSpriteCoordinate(this.boardY, this.scale, this.rotatable);
     }
 
-    static getSpriteCoordinate(coordinate: number, rotatable?: boolean): number {
+    static getSpriteCoordinate(coordinate: number, scale: number, rotatable?: boolean): number {
         const corrector = rotatable ?  BoardSprite.size / 2 : 0;
-        return coordinate * BoardSprite.size + corrector;
+        const shift = (1 - scale) * BoardSprite.size / 2;
+        return coordinate * BoardSprite.size + corrector + shift;
     }
 
     static getBoardCoordinate(coordinate: number, rotatable?: boolean): number {

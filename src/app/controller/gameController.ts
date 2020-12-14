@@ -2,13 +2,18 @@ import {Game, GameState} from "../model/game";
 import * as PIXI from 'pixi.js';
 import {BoardGeneratorService} from "../service/boardGenerator.service";
 import {Direction} from "../model/direction";
+import {Ticker} from "pixi.js";
 
 export class GameController {
     readonly game: Game;
     private boardGeneratorService: BoardGeneratorService;
+    private ticker: Ticker;
 
     constructor(view: HTMLElement) {
         const app = new PIXI.Application({width: 1024, height: 768, backgroundColor: 0x123E67});
+        this.ticker = app.ticker;
+        this.ticker.autoStart = false;
+
         this.game = new Game();
         this.boardGeneratorService = new BoardGeneratorService(this.game, app, view);
         this.game.changeState$.subscribe(state => this.resolveState(state))
@@ -27,6 +32,7 @@ export class GameController {
             case GameState.IN_PROGRESS:
                 this.boardGeneratorService.generateBoard();
                 this.addEventListeners();
+                this.animateScene();
                 break;
         }
     }
@@ -60,5 +66,12 @@ export class GameController {
     }
 
     private keyUp(e) {
+    }
+
+    private animateScene() {
+        this.ticker.add((deltaTime) => {
+            this.boardGeneratorService.everyTick(deltaTime);
+        });
+        this.ticker.start();
     }
 }

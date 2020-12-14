@@ -43,10 +43,10 @@ export class MovableBoardElement extends BoardElement {
     protected speed: number;
     private direction: Direction;
 
-    constructor(boardSprite: BoardSprite, isDestroyable: boolean, speed: number) {
+    constructor(boardSprite: BoardSprite, isDestroyable: boolean, speed: number, direction: Direction) {
         super(boardSprite, isDestroyable, true);
         this.speed = speed;
-        this.direction = Direction.NONE;
+        this.direction = direction;
     }
 
     setDirection(direction: Direction) {

@@ -48,6 +48,6 @@ export enum SoundAsset {
     EXPLODE_SOUND = 'assets/sounds/explode.wav',
     HIT_SOUND = 'assets/sounds/hit.wav',
     LOSE_SOUND = 'assets/sounds/lose.wav',
-    SHOT_SOUND = 'assets/sounds/shot.wav',
+    SHOOT_SOUND = 'assets/sounds/shot.wav',
     WIN_SOUND = 'assets/sounds/win.wav',
 }
