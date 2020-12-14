@@ -9,9 +9,10 @@ export class Tank extends MovableBoardElement {
     private isImmortal: boolean;
 
     readonly tankType: TankType;
+    private bullet: Bullet | null;
 
     constructor(boardSprite: BoardSprite, tankType: TankType) {
-        super(boardSprite, true, 2);
+        super(boardSprite, true, 0.05);
 
         this.startX = boardSprite.sprite.x;
         this.startY = boardSprite.sprite.y;
@@ -69,4 +70,10 @@ export class Tank extends MovableBoardElement {
 
 export enum TankType {
     PLAYER, ENEMY
+}
+
+export class Bullet extends MovableBoardElement {
+    constructor(boardSprite: BoardSprite) {
+        super(boardSprite, true, 0.15);
+    }
 }

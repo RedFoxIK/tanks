@@ -1,11 +1,9 @@
 import {SpriteService} from "./sprite.service";
-import {AnimationAsset, BoardAsset, ButtonAsset, LoaderAsset, SoundAsset, TankAsset} from "../model/asset";
+import {BoardAsset, ButtonAsset, LoaderAsset, SoundAsset, TankAsset} from "../model/asset";
 import * as PIXI from "pixi.js";
 import {Game, GameState} from "../model/game";
 import {BoardElement, BoardObject} from "../model/boardElement";
-import {BoardSprite} from "../model/spriteWrapper";
 import {BoardElementsFactory} from "./boardElements.factory";
-import { default as PIXI_SOUND } from 'pixi-sound';
 //TODO: move to controller
 import boardMapResponse from "../api/board-map.json";
 import tanksResponse from "../api/tanks.json";
@@ -16,6 +14,8 @@ export class BoardGeneratorService {
     readonly boardSize = 32;
 
     private spriteService: SpriteService;
+    private boardElementFactory: BoardElementsFactory;
+
     private game: Game;
     private board: BoardElement | null [][];
     private playerTank: Tank;
@@ -23,7 +23,8 @@ export class BoardGeneratorService {
 
     constructor(game: Game, app: PIXI.Application, view: HTMLElement) {
         this.game = game;
-        this.spriteService = new SpriteService(app, view)
+        this.spriteService = new SpriteService(app, view);
+        this.boardElementFactory = new BoardElementsFactory(this.spriteService);
         this.enemies = [];
         this.boardInitialize();
     }
@@ -53,15 +54,15 @@ export class BoardGeneratorService {
     public generateBoard() {
 
         for (let i = 0; i < 32; i++) {
-            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, 0, i, BoardObject.BLOCK);
-            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, 31, i, BoardObject.BLOCK);
-            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, i, 0, BoardObject.BLOCK);
-            this.createBoardElem(BoardAsset, BoardAsset.BLOCK, i, 31, BoardObject.BLOCK);
+            this.createBoardElem(0, i, BoardObject.BLOCK);
+            this.createBoardElem(31, i, BoardObject.BLOCK);
+            this.createBoardElem(i, 0, BoardObject.BLOCK);
+            this.createBoardElem(i, 31, BoardObject.BLOCK);
         }
 
         Object.keys(boardMapResponse).forEach(key => {
             boardMapResponse[key].assets.forEach(asset => {
-                this.createBoardElem(BoardAsset, BoardAsset[boardMapResponse[key].enumValue], asset.x, asset.y, boardMapResponse[key].boardElem)
+                this.createBoardElem(asset.x, asset.y, boardMapResponse[key].boardElem, boardMapResponse[key].type)
             });
         })
 
@@ -70,7 +71,6 @@ export class BoardGeneratorService {
             this.createTank(TankAsset, TankAsset.ENEMY_TANK_1, enemy.x, enemy.y, TankType.ENEMY);
         })
         this.spriteService.rerenderScene();
-
         this.spriteService.playSound(SoundAsset.WIN_SOUND);
     }
 
@@ -85,14 +85,20 @@ export class BoardGeneratorService {
     }
 
     moveTank(direction: Direction) {
-        const point = this.playerTank.move(direction, true);
-        if (!this.isCollisionDetected(point.x, point.y, direction)) {
-            this.playerTank.move(direction, false);
+        this.playerTank.setDirection(direction)
+        const point = this.playerTank.move(true);
+        if (!this.isCollisionDetected(point.x, point.y, this.playerTank.getDirection())) {
+            this.playerTank.move(false);
         }
         this.spriteService.rerenderScene();
     }
 
-    isCollisionDetected(newX: number, newY: number, direction: Direction): boolean {
+    public shoot() {
+        const boardSprite = this.spriteService.createBoardElem(TankAsset, TankAsset.BULLET, this.playerTank.getX(), this.playerTank.getY());
+        // const bullet = new Bullet(boardSprite, this.playerTank.tankType);
+    }
+
+    private isCollisionDetected(newX: number, newY: number, direction: Direction): boolean {
         let leftCeil;
         let rightCeil;
 
@@ -117,9 +123,8 @@ export class BoardGeneratorService {
         return (leftCeil != null && leftCeil.isBarrier) || (rightCeil != null && rightCeil.isBarrier);
     }
 
-    createBoardElem(assetEnum, assetEnumValue: string, x: number, y: number, boardObjectName: string) {
-        const boardSprite = this.spriteService.createBoardElem(assetEnum, assetEnumValue, x, y);
-        this.board[x][y] = BoardElementsFactory.createBoardElem(boardObjectName, boardSprite);
+    createBoardElem(x: number, y: number, boardObjectName: string, wallType?: number) {
+        this.board[x][y] = this.boardElementFactory.createBoardElem(boardObjectName, x, y, wallType);
     }
 
     private boardInitialize() {

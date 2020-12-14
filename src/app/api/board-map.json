@@ -208,6 +208,7 @@
     "enum": "BOARD_ASSET",
     "enumValue": "WALL_1",
     "boardElem": "WALL",
+    "type": 1,
     "assets": [
       {
         "x": 14,
@@ -234,7 +235,7 @@
   "eagle": {
     "enum": "BOARD_ASSET",
     "enumValue": "EAGLE",
-    "boardElem": "LEAF",
+    "boardElem": "EAGLE",
     "assets": [
       {
         "x": 15,

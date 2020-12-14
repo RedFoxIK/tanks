@@ -1,5 +1,6 @@
 import {Direction} from "./direction";
 import {BoardSprite} from "./spriteWrapper";
+import {TankType} from "./tank";
 
 export abstract class BoardElement {
     protected boardSprite: BoardSprite;
@@ -28,38 +29,56 @@ export abstract class BoardElement {
         // return this.x === null || this.y === null;
         return false;
     }
+
+    getX(): number {
+        return this.boardSprite.boardX;
+    }
+
+    getY(): number {
+        return this.boardSprite.boardY;
+    }
 }
 
 export class MovableBoardElement extends BoardElement {
     protected speed: number;
+    private direction: Direction;
 
     constructor(boardSprite: BoardSprite, isDestroyable: boolean, speed: number) {
         super(boardSprite, isDestroyable, true);
         this.speed = speed;
+        this.direction = Direction.NONE;
+    }
+
+    setDirection(direction: Direction) {
+        this.direction = direction;
+    }
+
+    getDirection(): Direction {
+        return this.direction;
     }
 
     //TODO: 2 functions
-    move(direction: Direction, check: boolean): {x: number, y: number} {
+    move(check: boolean): {x: number, y: number} {
         let newX = this.boardSprite.boardX;
         let newY = this.boardSprite.boardY;
         let rotation = this.boardSprite.sprite.rotation;
 
-        switch (direction) {
+        switch (this.direction) {
             case Direction.UP:
                 rotation = 0;
-                newY -= 0.05;
+                newY -= this.speed;
                 break;
             case Direction.DOWN:
                 rotation = Math.PI * 2 * 0.5;
-                newY += 0.05;
+                newY += this.speed;
                 break;
             case Direction.RIGHT:
                 rotation = Math.PI * 2 * 0.25;
-                newX += 0.05;
+                newX += this.speed;
                 break;
             case Direction.LEFT:
                 rotation = -Math.PI * 2 * 0.25;
-                newX -= 0.05;
+                newX -= this.speed;
                 break;
         }
         if (!check) {
@@ -70,13 +89,6 @@ export class MovableBoardElement extends BoardElement {
         return {x: newX, y: newY};
     }
 }
-
-// export class Bullet extends MovableBoardElement {
-//
-//     constructor(x: number, y: number) {
-//         super(x, y, true, 4);
-//     }
-// }
 
 export class Eagle extends BoardElement {
     constructor(boardSprite: BoardSprite) {

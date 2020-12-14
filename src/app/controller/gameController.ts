@@ -54,6 +54,8 @@ export class GameController {
             case "KeyD":
                 this.boardGeneratorService.moveTank(Direction.RIGHT);
                 break;
+            case "Space":
+                this.boardGeneratorService.shoot();
         }
     }
 
