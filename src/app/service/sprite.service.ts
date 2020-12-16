@@ -14,6 +14,8 @@ export class SpriteService {
     private fontFamily = 'Snippet';
     private textColor = 'white';
 
+    private container: PIXI.Container;
+
     private spriteWrappersMap: Map<string, SpriteWrapper> = new Map<string, SpriteWrapper>();
 
     constructor(app: PIXI.Application, view: HTMLElement) {
@@ -24,6 +26,14 @@ export class SpriteService {
         this.renderer = app.renderer;
 
         view.replaceChild(app.view, view.lastElementChild);
+    }
+
+    public changeContainer(container: PIXI.Container) {
+        if (this.container) {
+            this.container.destroy();
+        }
+        this.container = container;
+        this.stage.addChild(container);
     }
 
     loadAssets(onProgressFn: Function, onCompleteFn: Function) {
@@ -43,7 +53,7 @@ export class SpriteService {
 
     addText(text: string, x: number, y: number, fontSize: number): SpriteWrapper {
         const stageText = new PIXI.Text(text, {fontSize: fontSize, fontFamily: this.fontFamily, fill: this.textColor});
-        this.stage.addChild(stageText);
+        this.container.addChild(stageText);
         const spriteWrapper = new SpriteWrapper(stageText, x, y);
         this.spriteWrappersMap.set(spriteWrapper.id, spriteWrapper)
         return spriteWrapper;
@@ -74,37 +84,37 @@ export class SpriteService {
 
     rerenderScene() {
         const aboveElemIndexes = [];
-        this.stage.children.forEach((e, i) => {
+        this.container.children.forEach((e, i) => {
             if (e.zIndex > 0) {
                 aboveElemIndexes.push(i);
             }
         })
 
-        const reservedForAboveFirstInx = this.stage.children.length - aboveElemIndexes.length;
+        const reservedForAboveFirstInx = this.container.children.length - aboveElemIndexes.length;
         const aboveElemInxWillBeSwapped = aboveElemIndexes.filter(val => val < reservedForAboveFirstInx);
         if (aboveElemInxWillBeSwapped.length > 0) {
             const bottomElemInxWillBeSwapped = [];
-            for (let i = reservedForAboveFirstInx; i < this.stage.children.length; i++) {
-                if (this.stage.children[i].zIndex == 0) {
+            for (let i = reservedForAboveFirstInx; i < this.container.children.length; i++) {
+                if (this.container.children[i].zIndex == 0) {
                     bottomElemInxWillBeSwapped.push(i);
                 }
             }
             for (let i = 0; i < aboveElemInxWillBeSwapped.length; i++) {
-                let temp = this.stage.children[aboveElemInxWillBeSwapped[i]];
-                this.stage.children[aboveElemInxWillBeSwapped[i]] = this.stage.children[bottomElemInxWillBeSwapped[i]];
-                this.stage.children[bottomElemInxWillBeSwapped[i]] = temp;
+                let temp = this.container.children[aboveElemInxWillBeSwapped[i]];
+                this.container.children[aboveElemInxWillBeSwapped[i]] = this.container.children[bottomElemInxWillBeSwapped[i]];
+                this.container.children[bottomElemInxWillBeSwapped[i]] = temp;
             }
         }
-        this.renderer.render(this.stage);
+        this.renderer.render(this.container);
     }
 
     removeSprites(...spriteWrappers: SpriteWrapper[]): void {
         spriteWrappers.forEach(wrap => this.spriteWrappersMap.delete(wrap.id))
-        this.stage.removeChild(...spriteWrappers.map(wrap => wrap.sprite));
+        this.container.removeChild(...spriteWrappers.map(wrap => wrap.sprite));
     }
 
     clearScene(): void {
-       this.stage.removeChild(...Array.from(this.spriteWrappersMap.values()).map(wrap => wrap.sprite));
+       this.container.removeChild(...Array.from(this.spriteWrappersMap.values()).map(wrap => wrap.sprite));
        this.spriteWrappersMap.clear();
     }
 
@@ -137,7 +147,7 @@ export class SpriteService {
     }
 
     private addSpriteToBoard(spriteWrapper: SpriteWrapper) {
-        this.stage.addChild(spriteWrapper.sprite);
+        this.container.addChild(spriteWrapper.sprite);
         this.spriteWrappersMap.set(spriteWrapper.id, spriteWrapper)
     }
 }

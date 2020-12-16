@@ -1,14 +1,18 @@
 import {Game, GameState} from "../model/game";
 import * as PIXI from 'pixi.js';
 import {Ticker} from 'pixi.js';
-import {BoardGeneratorService} from "../service/boardGenerator.service";
 import {Direction} from "../model/direction";
+import {GameManagerService} from "../service/gameManager.service";
+import {ViewRenderService} from "../service/viewRender.service";
+import boardMapResponse from "../api/board-map.json";
+import {SpriteService} from "../service/sprite.service";
 
 export class GameController {
     private static movements = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyD", "KeyS", "KeyA"];
 
     readonly game: Game;
-    private boardGeneratorService: BoardGeneratorService;
+    private gameManagerService: GameManagerService;
+    private viewRenderService: ViewRenderService;
     private ticker: Ticker;
 
     constructor(view: HTMLElement) {
@@ -17,9 +21,11 @@ export class GameController {
         this.ticker.autoStart = false;
 
         this.game = new Game();
-        this.boardGeneratorService = new BoardGeneratorService(this.game, app, view);
+        const spriteService = new SpriteService(app, view)
+        this.gameManagerService = new GameManagerService(spriteService, this.game);
+        this.viewRenderService = new ViewRenderService(spriteService, this.gameManagerService);
         this.game.changeState$.subscribe(state => this.resolveState(state))
-        this.boardGeneratorService.successGameOver$.subscribe(result => result ? this.game.changeState(GameState.WIN)
+        this.gameManagerService.successGameOver$.subscribe(result => result ? this.game.changeState(GameState.WIN)
             :  this.game.changeState(GameState.LOOSE));
         this.game.init();
     }
@@ -31,24 +37,25 @@ export class GameController {
                 this.game.changeState(GameState.PRELOADED);
                 break;
             case GameState.PRELOADED:
-                this.boardGeneratorService.generatePreloadedBoard()
+                this.viewRenderService.renderPreloadScene(() => this.game.changeState(GameState.IN_PROGRESS));
                 break;
             case GameState.IN_PROGRESS:
-                this.boardGeneratorService.generateBoard();
+                this.viewRenderService.renderGameScene(boardMapResponse);
                 this.addEventListeners();
                 this.animateScene();
                 break;
             case GameState.LOOSE:
                 this.ticker.stop();
-                this.boardGeneratorService.looseGame();
+                this.viewRenderService.renderUnsuccessfulResultScene();
                 break;
             case GameState.WIN:
                 this.ticker.stop();
-                this.boardGeneratorService.winGame();
+                this.viewRenderService.renderSuccessfulResultScene();
                 break;
         }
     }
 
+    //ONE more controller;
     private addEventListeners() {
         window.addEventListener('keydown', (e) => this.keyDown(e))
         window.addEventListener('keyup', (e) => this.keyUp(e))
@@ -58,34 +65,34 @@ export class GameController {
         switch (e.code) {
             case "ArrowUp":
             case "KeyW":
-                this.boardGeneratorService.playerTank.setDirection(Direction.UP)
+                this.gameManagerService.playerTank.setDirection(Direction.UP)
                 break;
             case "ArrowDown":
             case "KeyS":
-                this.boardGeneratorService.playerTank.setDirection(Direction.DOWN);
+                this.gameManagerService.playerTank.setDirection(Direction.DOWN);
                 break;
             case "ArrowLeft":
             case "KeyA":
-                this.boardGeneratorService.playerTank.setDirection(Direction.LEFT);
+                this.gameManagerService.playerTank.setDirection(Direction.LEFT);
                 break;
             case "ArrowRight":
             case "KeyD":
-                this.boardGeneratorService.playerTank.setDirection(Direction.RIGHT);
+                this.gameManagerService.playerTank.setDirection(Direction.RIGHT);
                 break;
             case "Space":
-                this.boardGeneratorService.shoot();
+                this.gameManagerService.shoot();
         }
     }
 
     private keyUp(e) {
         if (GameController.movements.indexOf(e.code) > -1) {
-            this.boardGeneratorService.playerTank.setDirection(Direction.NONE);
+            this.gameManagerService.playerTank.setDirection(Direction.NONE);
         }
     }
 
     private animateScene() {
         this.ticker.add((deltaTime) => {
-            this.boardGeneratorService.everyTick(deltaTime);
+            this.gameManagerService.everyTick(deltaTime);
         });
         this.ticker.start();
     }

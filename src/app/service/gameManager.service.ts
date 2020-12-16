@@ -1,17 +1,14 @@
-import {SpriteService} from "./sprite.service";
-import {AnimationAsset, ButtonAsset, LoaderAsset, SoundAsset, TankAsset} from "../model/asset";
-import * as PIXI from "pixi.js";
-import {Game, GameState} from "../model/game";
 import {BoardElement, BoardObject, Water} from "../model/boardElement";
-import {BoardElementsFactory} from "./boardElements.factory";
-//TODO: move to controller
-import boardMapResponse from "../api/board-map.json";
+import {AnimationAsset, SoundAsset, TankAsset} from "../model/asset";
 import tanksResponse from "../api/tanks.json";
 import {Tank, TankType} from "../model/tank";
 import {Direction} from "../model/direction";
+import {Game} from "../model/game";
+import {SpriteService} from "./sprite.service";
+import {BoardElementsFactory} from "./boardElements.factory";
 import {Subject} from "rxjs";
 
-export class BoardGeneratorService {
+export class GameManagerService {
     readonly boardSize = 32;
 
     private spriteService: SpriteService;
@@ -25,56 +22,17 @@ export class BoardGeneratorService {
     private takeLife$ = new Subject<Tank>();
     successGameOver$ = new Subject<boolean>();
 
-    constructor(game: Game, app: PIXI.Application, view: HTMLElement) {
+    constructor(spriteService: SpriteService, game: Game) {
         this.game = game;
-        this.spriteService = new SpriteService(app, view);
+        this.spriteService = spriteService;
         this.boardElementFactory = new BoardElementsFactory(this.spriteService);
         this.enemies = [];
         this.boardInitialize();
         this.takeLife$.subscribe(tank => this.resolveTankSituation(tank));
     }
 
-    private resolveTankSituation(tank: Tank) {
-        tank.takeLife();
-        if (tank.isDead()) {
-            this.successGameOver$.next(false);
-        }
-    }
-
-    public generatePreloadedBoard() {
-        this.spriteService.addText('Tank Game', 280, 200, 100);
-        const progressBg = this.spriteService.addSprite(LoaderAsset, LoaderAsset.LOADER_BG, 200, 500, 600, 80);
-        const progressBar = this.spriteService.addSprite(LoaderAsset, LoaderAsset.LOADER_BAR, 205, 505, 0, 70);
-
-        const onProgress = e => {
-            progressBar.changeWidth(590 * (e.progress * 0.01));
-            this.spriteService.rerenderScene();
-        };
-
-        const onComplete = () => {
-            this.spriteService.removeSprites(progressBg, progressBar);
-            const startBtn = this.spriteService.addSprite(ButtonAsset, ButtonAsset.START, 350, 450);
-            this.spriteService.makeSpriteInteractive(startBtn, true,
-                "pointerdown", () => {
-                    this.spriteService.clearScene()
-                    this.game.changeState(GameState.IN_PROGRESS);
-                });
-        }
-        this.spriteService.loadAssets(onProgress, onComplete);
-    }
-
-    public winGame() {
-        this.spriteService.playSound(SoundAsset.WIN_SOUND);
-        this.spriteService.clearScene();
-    }
-
-    public looseGame() {
-        this.spriteService.playSound(SoundAsset.LOSE_SOUND);
-        this.spriteService.clearScene();
-    }
-
-    public generateBoard() {
-
+    //TODO: create model
+    public generateBoard(boardModel: any) {
         for (let i = 0; i < 32; i++) {
             this.createBoardElem(0, i, BoardObject.BLOCK);
             this.createBoardElem(31, i, BoardObject.BLOCK);
@@ -82,9 +40,9 @@ export class BoardGeneratorService {
             this.createBoardElem(i, 31, BoardObject.BLOCK);
         }
 
-        Object.keys(boardMapResponse).forEach(key => {
-            boardMapResponse[key].assets.forEach(asset => {
-                this.createBoardElem(asset.x, asset.y, boardMapResponse[key].boardElem, boardMapResponse[key].type)
+        Object.keys(boardModel).forEach(key => {
+            boardModel[key].assets.forEach(asset => {
+                this.createBoardElem(asset.x, asset.y, boardModel[key].boardElem, boardModel[key].type)
             });
         })
 
@@ -97,7 +55,7 @@ export class BoardGeneratorService {
     }
 
     createTank(assetEnum, assetEnumValue: string, x: number, y: number, tankType: TankType) {
-        const boardSprite = this.spriteService.createBoardElem(assetEnum, assetEnumValue, x, y, 1,true, true);
+        const boardSprite = this.spriteService.createBoardElem(assetEnum, assetEnumValue, x, y, 1, true, true);
         const tank = new Tank(boardSprite, tankType);
         if (tankType == TankType.PLAYER) {
             this.playerTank = tank;
@@ -134,7 +92,8 @@ export class BoardGeneratorService {
         if (barrier) {
             this.spriteService.removeSprites(this.playerTank.getBullet().boardSprite);
             this.playerTank.explodeBullet();
-            let onComplete = barrier.isDestroyable ? () => this.removeBoardElem(barrier) : () => {};
+            let onComplete = barrier.isDestroyable ? () => this.removeBoardElem(barrier) : () => {
+            };
             this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, newPoint.x, newPoint.y, onComplete);
         }
     }
@@ -149,20 +108,20 @@ export class BoardGeneratorService {
         let nextCeil;
         switch (direction) {
             case Direction.UP:
-                currentCeil = this.board[Math.round(newX)][BoardGeneratorService.ceil(newY)];
-                nextCeil =  this.board[Math.round(newX)][BoardGeneratorService.ceil(newY) - 1];
+                currentCeil = this.board[Math.round(newX)][GameManagerService.ceil(newY)];
+                nextCeil = this.board[Math.round(newX)][GameManagerService.ceil(newY) - 1];
                 break;
             case Direction.DOWN:
-                currentCeil = this.board[Math.round(newX)][BoardGeneratorService.floor(newY)];
-                nextCeil = this.board[Math.round(newX)][BoardGeneratorService.floor(newY) + 1];
+                currentCeil = this.board[Math.round(newX)][GameManagerService.floor(newY)];
+                nextCeil = this.board[Math.round(newX)][GameManagerService.floor(newY) + 1];
                 break;
             case Direction.LEFT :
-                currentCeil = this.board[BoardGeneratorService.ceil(newX)][Math.round(newY)];
-                nextCeil = this.board[BoardGeneratorService.ceil(newX) - 1][Math.round(newY)];
+                currentCeil = this.board[GameManagerService.ceil(newX)][Math.round(newY)];
+                nextCeil = this.board[GameManagerService.ceil(newX) - 1][Math.round(newY)];
                 break;
             case Direction.RIGHT:
-                currentCeil = this.board[BoardGeneratorService.floor(newX)][Math.round(newY)];
-                nextCeil = this.board[BoardGeneratorService.floor(newX) + 1][Math.round(newY)];
+                currentCeil = this.board[GameManagerService.floor(newX)][Math.round(newY)];
+                nextCeil = this.board[GameManagerService.floor(newX) + 1][Math.round(newY)];
                 break;
         }
         if (currentCeil != null && !currentCeil.isSkippedByBullet) {
@@ -178,20 +137,20 @@ export class BoardGeneratorService {
 
         switch (direction) {
             case Direction.UP:
-                leftCeil = this.board[BoardGeneratorService.floor(newX)][BoardGeneratorService.floor(newY)];
-                rightCeil = this.board[BoardGeneratorService.ceil(newX)][BoardGeneratorService.floor(newY)];
+                leftCeil = this.board[GameManagerService.floor(newX)][GameManagerService.floor(newY)];
+                rightCeil = this.board[GameManagerService.ceil(newX)][GameManagerService.floor(newY)];
                 break;
             case Direction.DOWN:
-                leftCeil = this.board[BoardGeneratorService.floor(newX)][BoardGeneratorService.ceil(newY)];
-                rightCeil = this.board[BoardGeneratorService.ceil(newX)][BoardGeneratorService.ceil(newY)];
+                leftCeil = this.board[GameManagerService.floor(newX)][GameManagerService.ceil(newY)];
+                rightCeil = this.board[GameManagerService.ceil(newX)][GameManagerService.ceil(newY)];
                 break;
             case Direction.LEFT :
-                leftCeil = this.board[BoardGeneratorService.floor(newX)][BoardGeneratorService.floor(newY)];
-                rightCeil = this.board[BoardGeneratorService.floor(newX)][BoardGeneratorService.ceil(newY)];
+                leftCeil = this.board[GameManagerService.floor(newX)][GameManagerService.floor(newY)];
+                rightCeil = this.board[GameManagerService.floor(newX)][GameManagerService.ceil(newY)];
                 break;
             case Direction.RIGHT:
-                leftCeil = this.board[BoardGeneratorService.ceil(newX)][BoardGeneratorService.floor(newY)];
-                rightCeil = this.board[BoardGeneratorService.ceil(newX)][BoardGeneratorService.ceil(newY)];
+                leftCeil = this.board[GameManagerService.ceil(newX)][GameManagerService.floor(newY)];
+                rightCeil = this.board[GameManagerService.ceil(newX)][GameManagerService.ceil(newY)];
                 break;
         }
 
@@ -224,4 +183,12 @@ export class BoardGeneratorService {
             }
         }
     }
+
+    private resolveTankSituation(tank: Tank) {
+        tank.takeLife();
+        if (tank.isDead()) {
+            this.successGameOver$.next(false);
+        }
+    }
+
 }
