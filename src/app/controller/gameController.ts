@@ -25,8 +25,7 @@ export class GameController {
         this.gameManagerService = new GameManagerService(spriteService, this.game);
         this.viewRenderService = new ViewRenderService(spriteService, this.gameManagerService);
         this.game.changeState$.subscribe(state => this.resolveState(state))
-        this.gameManagerService.successGameOver$.subscribe(result => result ? this.game.changeState(GameState.WIN)
-            :  this.game.changeState(GameState.LOOSE));
+        this.gameManagerService.successGameOver$.subscribe(result => result ? this.game.changeState(GameState.WIN) :  this.game.changeState(GameState.LOOSE));
         this.game.init();
     }
 

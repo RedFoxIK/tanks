@@ -17,10 +17,9 @@ export class ViewRenderService {
     }
 
     renderPreloadScene(callback: Function) {
-        const container = new PIXI.Container();
-        this.spriteService.changeContainer(container);
-
+        this.spriteService.changeContainer(new PIXI.Container());
         this.spriteService.addText('Tank Game', 280, 200, 100);
+
         const progressBg = this.spriteService.addSprite(LoaderAsset, LoaderAsset.LOADER_BG, 200, 500, 600, 80);
         const progressBar = this.spriteService.addSprite(LoaderAsset, LoaderAsset.LOADER_BAR, 205, 505, 0, 70);
 
@@ -38,21 +37,19 @@ export class ViewRenderService {
     }
 
     renderGameScene(boardModel: any) {
-        const container = new PIXI.Container();
-        this.spriteService.changeContainer(container);
+        this.spriteService.changeContainer(new PIXI.Container());
         this.gameManagerService.generateBoard(boardModel);
     }
 
     renderSuccessfulResultScene() {
-        const container = new PIXI.Container();
-        this.spriteService.changeContainer(container);
+        this.spriteService.changeContainer(new PIXI.Container());
+        this.spriteService.addText('WIN', 280, 200, 100);
         this.spriteService.playSound(SoundAsset.WIN_SOUND);
     }
 
     renderUnsuccessfulResultScene() {
-        const container = new PIXI.Container();
-        this.spriteService.changeContainer(container);
+        this.spriteService.changeContainer(new PIXI.Container());
+        this.spriteService.addText('LOOSE', 280, 200, 100);
         this.spriteService.playSound(SoundAsset.LOSE_SOUND);
     }
-
 }

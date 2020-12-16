@@ -1,4 +1,4 @@
-import {BoardElement, BoardObject, Water} from "../model/boardElement";
+import {BoardElement, BoardObject, Eagle, Water} from "../model/boardElement";
 import {AnimationAsset, SoundAsset, TankAsset} from "../model/asset";
 import tanksResponse from "../api/tanks.json";
 import {Tank, TankType} from "../model/tank";
@@ -92,9 +92,11 @@ export class GameManagerService {
         if (barrier) {
             this.spriteService.removeSprites(this.playerTank.getBullet().boardSprite);
             this.playerTank.explodeBullet();
-            let onComplete = barrier.isDestroyable ? () => this.removeBoardElem(barrier) : () => {
-            };
+            let onComplete = barrier.isDestroyable ? () => this.removeBoardElem(barrier) : () => {};
             this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, newPoint.x, newPoint.y, onComplete);
+            if (barrier instanceof Eagle) {
+                this.successGameOver$.next(false);
+            }
         }
     }
 
@@ -190,5 +192,4 @@ export class GameManagerService {
             this.successGameOver$.next(false);
         }
     }
-
 }
