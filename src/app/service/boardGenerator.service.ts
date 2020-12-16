@@ -93,7 +93,8 @@ export class BoardGeneratorService {
     }
 
     public shoot() {
-        const boardSprite = this.spriteService.createBoardElem(TankAsset, TankAsset.BULLET, this.playerTank.getX(), this.playerTank.getY(), 0.5);
+        //TODO SCALE in elem //ONE time create please
+        const boardSprite = this.spriteService.createBoardElem(TankAsset, TankAsset.BULLET, this.playerTank.getX(), this.playerTank.getY(), 0.5, true);
         const newBulletCreated = this.playerTank.createBullet(boardSprite);
         if (!newBulletCreated) {
             this.spriteService.removeSprites(boardSprite);
@@ -107,11 +108,36 @@ export class BoardGeneratorService {
         this.moveTank();
 
         const newPoint = this.playerTank.moveBullet();
-        if (newPoint && this.isCollisionDetected(newPoint.x, newPoint.y, this.playerTank.getBulletDirection())) {
+        if (newPoint && this.isCollisionDetectedForBullet(newPoint.x, newPoint.y, this.playerTank.getBulletDirection())) {
             this.spriteService.removeSprites(this.playerTank.getBullet().boardSprite);
             this.playerTank.explodeBullet();
-            this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, newPoint.x, newPoint.y, () => {});
+            this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, newPoint.x, newPoint.y);
         }
+    }
+
+    private isCollisionDetectedForBullet(newX: number, newY: number, direction: Direction): boolean {
+        let currentCeil;
+        let nextCeil;
+        switch (direction) {
+            case Direction.UP:
+                currentCeil = this.board[Math.round(newX)][BoardGeneratorService.floor(newY)];
+                nextCeil =  this.board[Math.round(newX)][BoardGeneratorService.floor(newY) + 1];
+                break;
+            case Direction.DOWN:
+                currentCeil = this.board[Math.round(newX)][BoardGeneratorService.ceil(newY)];
+                nextCeil = this.board[Math.round(newX)][BoardGeneratorService.ceil(newY) - 1];
+                break;
+            case Direction.LEFT :
+                currentCeil = this.board[BoardGeneratorService.floor(newX)][Math.round(newY)];
+                nextCeil = this.board[BoardGeneratorService.floor(newX) - 1][Math.round(newY)];
+                break;
+            case Direction.RIGHT:
+                currentCeil = this.board[BoardGeneratorService.ceil(newX)][Math.round(newY)];
+                nextCeil = this.board[BoardGeneratorService.ceil(newX) + 1][Math.round(newY)];
+                break;
+        }
+        //TODO FIX
+        return (currentCeil != null) || (nextCeil != null && !nextCeil.isDestroyable);
     }
 
     private isCollisionDetected(newX: number, newY: number, direction: Direction): boolean {

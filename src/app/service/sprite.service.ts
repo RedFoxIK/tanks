@@ -54,7 +54,7 @@ export class SpriteService {
         const boardSprite = new BoardSprite(sprite, x, y, rotatable, scale);
 
         !animation ? this.addSpriteToBoard(boardSprite) :
-            this.playAnimation(AnimationAsset.APPEAR, boardSprite.sprite.x, boardSprite.sprite.y, () => this.addSpriteToBoard(boardSprite));
+            this.playAnimation(AnimationAsset.APPEAR, boardSprite.sprite.x, boardSprite.sprite.y,  () => this.addSpriteToBoard(boardSprite));
 
         return boardSprite;
     }
@@ -116,7 +116,7 @@ export class SpriteService {
         const animationKey = EnumUtilsService.getKey(AnimationAsset, animAssetValue);
         const animation = new PIXI.AnimatedSprite(this.loader.resources[animationKey].spritesheet.animations['animation']);
 
-        const spriteWrapper = new BoardSprite(animation, x, y, false, 2);
+        const spriteWrapper = new BoardSprite(animation, x, y, true, 2);
         this.addSpriteToBoard(spriteWrapper);
 
         animation.loop = false;
