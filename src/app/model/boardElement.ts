@@ -5,11 +5,13 @@ export abstract class BoardElement {
     boardSprite: BoardSprite;
     readonly isDestroyable: boolean;
     readonly isBarrier: boolean;
+    readonly isSkippedByBullet: boolean;
 
-    protected constructor(boardSprite: BoardSprite, isDestroyable: boolean, isBarrier: boolean) {
+    protected constructor(boardSprite: BoardSprite, isDestroyable: boolean, isBarrier: boolean, isSkippedByBullet: boolean) {
         this.boardSprite = boardSprite;
         this.isDestroyable = isDestroyable;
         this.isBarrier = isBarrier;
+        this.isSkippedByBullet = isSkippedByBullet;
     }
 
     protected resetPosition(x: number, y: number): void {
@@ -43,7 +45,7 @@ export class MovableBoardElement extends BoardElement {
     private direction: Direction;
 
     constructor(boardSprite: BoardSprite, isDestroyable: boolean, speed: number, direction: Direction) {
-        super(boardSprite, isDestroyable, true);
+        super(boardSprite, isDestroyable, true, false);
         this.speed = speed;
         this.direction = direction;
     }
@@ -101,31 +103,31 @@ export class MovableBoardElement extends BoardElement {
 
 export class Eagle extends BoardElement {
     constructor(boardSprite: BoardSprite) {
-        super(boardSprite, true, true);
+        super(boardSprite, true, true, false);
     }
 }
 
 export class Wall extends BoardElement {
     constructor(boardSprite: BoardSprite) {
-        super(boardSprite, true, true);
+        super(boardSprite, true, true, false);
     }
 }
 
 export class Block extends BoardElement {
     constructor(boardSprite: BoardSprite) {
-        super(boardSprite, false, true);
+        super(boardSprite, false, true, false);
     }
 }
 
 export class Water extends BoardElement {
     constructor(boardSprite: BoardSprite) {
-        super(boardSprite, false, true);
+        super(boardSprite, false, true, true);
     }
 }
 
 export class Leaf extends BoardElement {
     constructor(boardSprite: BoardSprite) {
-        super(boardSprite, false, false);
+        super(boardSprite, false, false, true);
         this.boardSprite.sprite.zIndex = 100;
     }
 }
