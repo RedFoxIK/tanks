@@ -1,5 +1,5 @@
 import {SpriteService} from "./sprite.service";
-import {ButtonAsset, LoaderAsset, SoundAsset, TankAsset} from "../model/asset";
+import {AnimationAsset, ButtonAsset, LoaderAsset, SoundAsset, TankAsset} from "../model/asset";
 import * as PIXI from "pixi.js";
 import {Game, GameState} from "../model/game";
 import {BoardElement, BoardObject} from "../model/boardElement";
@@ -18,8 +18,8 @@ export class BoardGeneratorService {
 
     private game: Game;
     private board: BoardElement | null [][];
-    private playerTank: Tank;
     private enemies: Tank[];
+    playerTank: Tank;
 
     constructor(game: Game, app: PIXI.Application, view: HTMLElement) {
         this.game = game;
@@ -84,8 +84,7 @@ export class BoardGeneratorService {
         }
     }
 
-    moveTank(direction: Direction) {
-        this.playerTank.setDirection(direction)
+    moveTank() {
         const point = this.playerTank.move(true);
         if (!this.isCollisionDetected(point.x, point.y, this.playerTank.getDirection())) {
             this.playerTank.move(false);
@@ -104,7 +103,15 @@ export class BoardGeneratorService {
     }
 
     everyTick(delta: any) {
-        this.playerTank.moveBullet();
+        //TODO newPoint can be taken from bullet
+        this.moveTank();
+
+        const newPoint = this.playerTank.moveBullet();
+        if (newPoint && this.isCollisionDetected(newPoint.x, newPoint.y, this.playerTank.getBulletDirection())) {
+            this.spriteService.removeSprites(this.playerTank.getBullet().boardSprite);
+            this.playerTank.explodeBullet();
+            this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, newPoint.x, newPoint.y, () => {});
+        }
     }
 
     private isCollisionDetected(newX: number, newY: number, direction: Direction): boolean {
@@ -113,23 +120,31 @@ export class BoardGeneratorService {
 
         switch (direction) {
             case Direction.UP:
-                leftCeil = this.board[Math.floor(newX)][Math.floor(newY)];
-                rightCeil = this.board[Math.ceil(newX)][Math.floor(newY)];
+                leftCeil = this.board[BoardGeneratorService.floor(newX)][BoardGeneratorService.floor(newY)];
+                rightCeil = this.board[BoardGeneratorService.ceil(newX)][BoardGeneratorService.floor(newY)];
                 break;
             case Direction.DOWN:
-                leftCeil = this.board[Math.floor(newX)][Math.ceil(newY)];
-                rightCeil = this.board[Math.ceil(newX)][Math.ceil(newY)];
+                leftCeil = this.board[BoardGeneratorService.floor(newX)][BoardGeneratorService.ceil(newY)];
+                rightCeil = this.board[BoardGeneratorService.ceil(newX)][BoardGeneratorService.ceil(newY)];
                 break;
-            case Direction.LEFT:
-                leftCeil = this.board[Math.floor(newX)][Math.floor(newY)];
-                rightCeil = this.board[Math.floor(newX)][Math.ceil(newY)];
+            case Direction.LEFT :
+                leftCeil = this.board[BoardGeneratorService.floor(newX)][BoardGeneratorService.floor(newY)];
+                rightCeil = this.board[BoardGeneratorService.floor(newX)][BoardGeneratorService.ceil(newY)];
                 break;
             case Direction.RIGHT:
-                leftCeil = this.board[Math.ceil(newX)][Math.floor(newY)];
-                rightCeil = this.board[Math.ceil(newX)][Math.ceil(newY)];
+                leftCeil = this.board[BoardGeneratorService.ceil(newX)][BoardGeneratorService.floor(newY)];
+                rightCeil = this.board[BoardGeneratorService.ceil(newX)][BoardGeneratorService.ceil(newY)];
                 break;
         }
         return (leftCeil != null && leftCeil.isBarrier) || (rightCeil != null && rightCeil.isBarrier);
+    }
+
+    private static floor(coordinate: number): number {
+        return Math.floor(coordinate) > 0 ? Math.floor(coordinate) : 0;
+    }
+
+    private static ceil(coordinate: number) {
+        return Math.ceil(coordinate) < 32 ? Math.ceil(coordinate) : 31;
     }
 
     createBoardElem(x: number, y: number, boardObjectName: string, wallType?: number) {

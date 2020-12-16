@@ -1,9 +1,8 @@
 import {Direction} from "./direction";
 import {BoardSprite} from "./spriteWrapper";
-import {TankType} from "./tank";
 
 export abstract class BoardElement {
-    protected boardSprite: BoardSprite;
+    boardSprite: BoardSprite;
     readonly isDestroyable: boolean;
     readonly isBarrier: boolean;
 
@@ -87,6 +86,16 @@ export class MovableBoardElement extends BoardElement {
             this.boardSprite.changeY(newY);
         }
         return {x: newX, y: newY};
+    }
+
+    protected resolveDirectionByRotation(rotation: number): Direction {
+        switch (rotation) {
+            case 0: return Direction.UP;
+            case Math.PI * 2 * 0.5: return Direction.DOWN;
+            case Math.PI * 2 * 0.25: return Direction.RIGHT;
+            case -Math.PI * 2 * 0.25: return Direction.LEFT;
+            default: return Direction.NONE;
+        }
     }
 }
 

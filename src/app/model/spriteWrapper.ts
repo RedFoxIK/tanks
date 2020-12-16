@@ -34,8 +34,6 @@ export class BoardSprite extends SpriteWrapper {
         const stageX = BoardSprite.getSpriteCoordinate(x, scale, rotatable);
         const stageY = BoardSprite.getSpriteCoordinate(y, scale, rotatable);
 
-        console.log(stageX + ' -- ' + stageY);
-
         const size = scale * BoardSprite.size;
         super(sprite, stageX, stageY, size, size);
 

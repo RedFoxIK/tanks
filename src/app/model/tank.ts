@@ -1,4 +1,4 @@
-import {BoardElement, MovableBoardElement} from "./boardElement";
+import {MovableBoardElement} from "./boardElement";
 import {BoardSprite} from "./spriteWrapper";
 import {Direction} from "./direction";
 
@@ -13,7 +13,7 @@ export class Tank extends MovableBoardElement {
     private bullet: Bullet | null;
 
     constructor(boardSprite: BoardSprite, tankType: TankType) {
-        const direction = tankType === TankType.PLAYER ? Direction.UP : Direction.DOWN;
+        const direction = Direction.NONE;
         super(boardSprite, true, 0.05, direction);
 
         this.startX = boardSprite.sprite.x;
@@ -31,20 +31,31 @@ export class Tank extends MovableBoardElement {
 
     createBullet(boardSprite: BoardSprite): boolean {
         if (!this.bullet) {
-            this.bullet = new Bullet(boardSprite, this.getDirection());
+            const bulletDirection = this.getDirection() !== Direction.NONE ? this.getDirection() :
+                this.resolveDirectionByRotation(this.boardSprite.sprite.rotation);
+
+            this.bullet = new Bullet(boardSprite, bulletDirection);
             return true
         }
         return false;
     }
 
-    moveBullet() {
+    moveBullet(): {x: number, y: number} {
         if (this.bullet) {
-            this.bullet.move(false);
+            return this.bullet.move(false);
         }
+    }
+
+    getBulletDirection() {
+        return this.bullet ? this.bullet.getDirection() : Direction.NONE;
     }
 
     explodeBullet(): void {
         this.bullet = null;
+    }
+
+    getBullet() {
+        return this.bullet;
     }
 
     addLife(): void {

@@ -5,6 +5,8 @@ import {Direction} from "../model/direction";
 import {Ticker} from "pixi.js";
 
 export class GameController {
+    private static movements = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyD", "KeyS", "KeyA"];
+
     readonly game: Game;
     private boardGeneratorService: BoardGeneratorService;
     private ticker: Ticker;
@@ -46,19 +48,19 @@ export class GameController {
         switch (e.code) {
             case "ArrowUp":
             case "KeyW":
-                this.boardGeneratorService.moveTank(Direction.UP);
+                this.boardGeneratorService.playerTank.setDirection(Direction.UP)
                 break;
             case "ArrowDown":
             case "KeyS":
-                this.boardGeneratorService.moveTank(Direction.DOWN);
+                this.boardGeneratorService.playerTank.setDirection(Direction.DOWN);
                 break;
             case "ArrowLeft":
             case "KeyA":
-                this.boardGeneratorService.moveTank(Direction.LEFT);
+                this.boardGeneratorService.playerTank.setDirection(Direction.LEFT);
                 break;
             case "ArrowRight":
             case "KeyD":
-                this.boardGeneratorService.moveTank(Direction.RIGHT);
+                this.boardGeneratorService.playerTank.setDirection(Direction.RIGHT);
                 break;
             case "Space":
                 this.boardGeneratorService.shoot();
@@ -66,6 +68,9 @@ export class GameController {
     }
 
     private keyUp(e) {
+        if (GameController.movements.indexOf(e.code) > -1) {
+            this.boardGeneratorService.playerTank.setDirection(Direction.NONE);
+        }
     }
 
     private animateScene() {
