@@ -116,7 +116,7 @@ export class SpriteService {
         const animationKey = EnumUtilsService.getKey(AnimationAsset, animAssetValue);
         const animation = new PIXI.AnimatedSprite(this.loader.resources[animationKey].spritesheet.animations['animation']);
 
-        const spriteWrapper = new BoardSprite(animation, x, y, true, 2);
+        const spriteWrapper = new BoardSprite(animation, x, y, true, 3);
         this.addSpriteToBoard(spriteWrapper);
 
         animation.loop = false;

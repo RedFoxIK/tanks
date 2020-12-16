@@ -126,7 +126,7 @@ export class BoardGeneratorService {
         this.spriteService.removeSprites(boardElem.boardSprite);
     }
 
-    private isCollisionDetectedForBullet(newX: number, newY: number, direction: Direction):  BoardElement | null {
+    private isCollisionDetectedForBullet(newX: number, newY: number, direction: Direction): BoardElement {
         let currentCeil;
         let nextCeil;
         switch (direction) {
@@ -148,11 +148,9 @@ export class BoardGeneratorService {
                 break;
         }
         if (currentCeil != null && !currentCeil.isSkippedByBullet) {
-            console.log('here ' + currentCeil);
             return currentCeil;
         }
-        console.log('next = ' + currentCeil);
-        return nextCeil;
+        return nextCeil != null && !nextCeil.isDestroyable && !nextCeil.isSkippedByBullet ? nextCeil : null;
     }
 
     private isCollisionDetected(newX: number, newY: number, direction: Direction): boolean {
