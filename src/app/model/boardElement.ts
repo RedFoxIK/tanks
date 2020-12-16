@@ -6,12 +6,14 @@ export abstract class BoardElement {
     readonly isDestroyable: boolean;
     readonly isBarrier: boolean;
     readonly isSkippedByBullet: boolean;
+    private destroyed: boolean;
 
     protected constructor(boardSprite: BoardSprite, isDestroyable: boolean, isBarrier: boolean, isSkippedByBullet: boolean) {
         this.boardSprite = boardSprite;
         this.isDestroyable = isDestroyable;
         this.isBarrier = isBarrier;
         this.isSkippedByBullet = isSkippedByBullet;
+        this.destroyed = true;
     }
 
     protected resetPosition(x: number, y: number): void {
@@ -21,14 +23,12 @@ export abstract class BoardElement {
 
     public destroy(): void {
         if (this.isDestroyable) {
-            // this.x = null;
-            // this.y = null;
+            this.destroyed = true;
         }
     }
 
     isDestroyed(): boolean {
-        // return this.x === null || this.y === null;
-        return false;
+        return this.destroyed;
     }
 
     getX(): number {

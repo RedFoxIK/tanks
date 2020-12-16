@@ -104,19 +104,29 @@ export class BoardGeneratorService {
     }
 
     everyTick(delta: any) {
-        //TODO newPoint can be taken from bullet
         this.moveTank();
 
         const newPoint = this.playerTank.moveBullet();
-        if (newPoint && this.isCollisionDetectedForBullet(newPoint.x, newPoint.y, this.playerTank.getBulletDirection())) {
-            console.log(`999 ${newPoint.x}, ${newPoint.y}  999`)
+        let barrier = newPoint ? this.isCollisionDetectedForBullet(newPoint.x, newPoint.y, this.playerTank.getBulletDirection()) : null;
+
+        if (barrier) {
             this.spriteService.removeSprites(this.playerTank.getBullet().boardSprite);
             this.playerTank.explodeBullet();
-            this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, newPoint.x, newPoint.y);
+            let onComplete = () => {};
+            if (barrier.isDestroyable) {
+                console.log(barrier)
+                onComplete = () => this.removeBoardElem(barrier);
+            }
+            this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, newPoint.x, newPoint.y, onComplete);
         }
     }
 
-    private isCollisionDetectedForBullet(newX: number, newY: number, direction: Direction): boolean {
+    private removeBoardElem(boardElem: BoardElement) {
+        this.board[boardElem.boardSprite.boardX][boardElem.boardSprite.boardY] = null;
+        this.spriteService.removeSprites(boardElem.boardSprite);
+    }
+
+    private isCollisionDetectedForBullet(newX: number, newY: number, direction: Direction):  BoardElement | null {
         let currentCeil;
         let nextCeil;
         switch (direction) {
@@ -137,10 +147,12 @@ export class BoardGeneratorService {
                 nextCeil = this.board[BoardGeneratorService.floor(newX) + 1][Math.round(newY)];
                 break;
         }
-        //TODO FIX
-        console.log(currentCeil);
-        return (currentCeil != null && !currentCeil.isSkippedByBullet)
-            || (nextCeil != null && !nextCeil.isDestroyable && !nextCeil.isSkippedByBullet);
+        if (currentCeil != null && !currentCeil.isSkippedByBullet) {
+            console.log('here ' + currentCeil);
+            return currentCeil;
+        }
+        console.log('next = ' + currentCeil);
+        return nextCeil;
     }
 
     private isCollisionDetected(newX: number, newY: number, direction: Direction): boolean {
