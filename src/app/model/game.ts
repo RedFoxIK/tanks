@@ -23,5 +23,6 @@ export enum GameState {
     CREATED,
     PRELOADED,
     IN_PROGRESS,
-    FINISHED
+    LOOSE,
+    WIN
 }

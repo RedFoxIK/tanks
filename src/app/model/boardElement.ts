@@ -121,7 +121,7 @@ export class Block extends BoardElement {
 
 export class Water extends BoardElement {
     constructor(boardSprite: BoardSprite) {
-        super(boardSprite, false, true, true);
+        super(boardSprite, false, false, true);
     }
 }
 

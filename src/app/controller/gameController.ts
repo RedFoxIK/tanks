@@ -1,8 +1,8 @@
 import {Game, GameState} from "../model/game";
 import * as PIXI from 'pixi.js';
+import {Ticker} from 'pixi.js';
 import {BoardGeneratorService} from "../service/boardGenerator.service";
 import {Direction} from "../model/direction";
-import {Ticker} from "pixi.js";
 
 export class GameController {
     private static movements = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyD", "KeyS", "KeyA"];
@@ -19,6 +19,8 @@ export class GameController {
         this.game = new Game();
         this.boardGeneratorService = new BoardGeneratorService(this.game, app, view);
         this.game.changeState$.subscribe(state => this.resolveState(state))
+        this.boardGeneratorService.successGameOver$.subscribe(result => result ? this.game.changeState(GameState.WIN)
+            :  this.game.changeState(GameState.LOOSE));
         this.game.init();
     }
 
@@ -35,6 +37,14 @@ export class GameController {
                 this.boardGeneratorService.generateBoard();
                 this.addEventListeners();
                 this.animateScene();
+                break;
+            case GameState.LOOSE:
+                this.ticker.stop();
+                this.boardGeneratorService.looseGame();
+                break;
+            case GameState.WIN:
+                this.ticker.stop();
+                this.boardGeneratorService.winGame();
                 break;
         }
     }

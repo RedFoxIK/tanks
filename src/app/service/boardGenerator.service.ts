@@ -2,13 +2,14 @@ import {SpriteService} from "./sprite.service";
 import {AnimationAsset, ButtonAsset, LoaderAsset, SoundAsset, TankAsset} from "../model/asset";
 import * as PIXI from "pixi.js";
 import {Game, GameState} from "../model/game";
-import {BoardElement, BoardObject} from "../model/boardElement";
+import {BoardElement, BoardObject, Water} from "../model/boardElement";
 import {BoardElementsFactory} from "./boardElements.factory";
 //TODO: move to controller
 import boardMapResponse from "../api/board-map.json";
 import tanksResponse from "../api/tanks.json";
 import {Tank, TankType} from "../model/tank";
 import {Direction} from "../model/direction";
+import {Subject} from "rxjs";
 
 export class BoardGeneratorService {
     readonly boardSize = 32;
@@ -21,12 +22,23 @@ export class BoardGeneratorService {
     private enemies: Tank[];
     playerTank: Tank;
 
+    private takeLife$ = new Subject<Tank>();
+    successGameOver$ = new Subject<boolean>();
+
     constructor(game: Game, app: PIXI.Application, view: HTMLElement) {
         this.game = game;
         this.spriteService = new SpriteService(app, view);
         this.boardElementFactory = new BoardElementsFactory(this.spriteService);
         this.enemies = [];
         this.boardInitialize();
+        this.takeLife$.subscribe(tank => this.resolveTankSituation(tank));
+    }
+
+    private resolveTankSituation(tank: Tank) {
+        tank.takeLife();
+        if (tank.isDead()) {
+            this.successGameOver$.next(false);
+        }
     }
 
     public generatePreloadedBoard() {
@@ -49,6 +61,16 @@ export class BoardGeneratorService {
                 });
         }
         this.spriteService.loadAssets(onProgress, onComplete);
+    }
+
+    public winGame() {
+        this.spriteService.playSound(SoundAsset.WIN_SOUND);
+        this.spriteService.clearScene();
+    }
+
+    public looseGame() {
+        this.spriteService.playSound(SoundAsset.LOSE_SOUND);
+        this.spriteService.clearScene();
     }
 
     public generateBoard() {
@@ -112,11 +134,7 @@ export class BoardGeneratorService {
         if (barrier) {
             this.spriteService.removeSprites(this.playerTank.getBullet().boardSprite);
             this.playerTank.explodeBullet();
-            let onComplete = () => {};
-            if (barrier.isDestroyable) {
-                console.log(barrier)
-                onComplete = () => this.removeBoardElem(barrier);
-            }
+            let onComplete = barrier.isDestroyable ? () => this.removeBoardElem(barrier) : () => {};
             this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, newPoint.x, newPoint.y, onComplete);
         }
     }
@@ -153,6 +171,7 @@ export class BoardGeneratorService {
         return nextCeil != null && !nextCeil.isDestroyable && !nextCeil.isSkippedByBullet ? nextCeil : null;
     }
 
+    //TODO pass tank
     private isCollisionDetected(newX: number, newY: number, direction: Direction): boolean {
         let leftCeil;
         let rightCeil;
@@ -175,6 +194,12 @@ export class BoardGeneratorService {
                 rightCeil = this.board[BoardGeneratorService.ceil(newX)][BoardGeneratorService.ceil(newY)];
                 break;
         }
+
+        const water = this.board[Math.round(newX)][Math.round(newY)];
+        if (water != null && water instanceof Water) {
+            this.takeLife$.next(this.playerTank);
+        }
+
         return (leftCeil != null && leftCeil.isBarrier) || (rightCeil != null && rightCeil.isBarrier);
     }
 

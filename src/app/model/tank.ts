@@ -64,12 +64,6 @@ export class Tank extends MovableBoardElement {
 
     takeLife(): void {
         this.lifeAmount -= 1;
-
-        if (!this.isDead()) {
-            this.resetPosition(this.startX, this.startY);
-        } else {
-            this.destroy();
-        }
     }
 
     takeWound(shooter: Tank): void {
