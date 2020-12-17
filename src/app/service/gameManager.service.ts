@@ -7,12 +7,14 @@ import {Game} from "../model/game";
 import {SpriteService} from "./sprite.service";
 import {BoardElementsFactory} from "./boardElements.factory";
 import {Subject} from "rxjs";
+import {BonusService} from "./bonus.service";
 
 export class GameManagerService {
     readonly boardSize = 32;
 
     private spriteService: SpriteService;
     private boardElementFactory: BoardElementsFactory;
+    private bonusService: BonusService;
 
     private game: Game;
     private board: BoardElement | null [][];
@@ -29,6 +31,7 @@ export class GameManagerService {
         this.enemies = [];
         this.boardInitialize();
         this.takeLife$.subscribe(tank => this.resolveTankSituation(tank));
+        this.bonusService = new BonusService(this.spriteService, this.boardElementFactory);
     }
 
     //TODO: create model
@@ -85,6 +88,7 @@ export class GameManagerService {
 
     everyTick(delta: any) {
         this.moveTank();
+        this.bonusService.handleBonuses(this.board);
 
         const newPoint = this.playerTank.moveBullet();
         let barrier = newPoint ? this.isCollisionDetectedForBullet(newPoint.x, newPoint.y, this.playerTank.getBulletDirection()) : null;

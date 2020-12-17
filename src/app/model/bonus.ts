@@ -1,11 +1,30 @@
 import {Tank} from "./tank";
+import {BoardElement} from "./boardElement";
+import {BoardSprite} from "./spriteWrapper";
 
-export abstract class Bonus {
+export abstract class Bonus extends BoardElement {
+    firstTick: number;
+    lifeTick: number;
+
+    protected constructor(boardSprite: BoardSprite, firstTick: number, lifeTick: number) {
+        super(boardSprite, false, false, true);
+        this.firstTick = firstTick;
+        this.lifeTick = lifeTick;
+    }
+
     abstract apply(tank: Tank): void;
     abstract finishEffect(tank: Tank): void;
+
+    isActive(tick: number) {
+        return tick < this.firstTick + this.lifeTick;
+    }
 }
 
 export class Shield extends Bonus {
+
+    constructor(boardSprite: BoardSprite, firstTick: number) {
+        super(boardSprite, firstTick, 200);
+    }
 
     apply(tank: Tank): void {
         tank.makeImmortal();
@@ -18,6 +37,10 @@ export class Shield extends Bonus {
 
 export class Life extends Bonus {
 
+    constructor(boardSprite: BoardSprite, firstTick: number) {
+        super(boardSprite, firstTick, 200);
+    }
+
     apply(tank: Tank): void {
         tank.addLife();
     }
@@ -27,6 +50,10 @@ export class Life extends Bonus {
 
 export class Snail extends Bonus {
 
+    constructor(boardSprite: BoardSprite, firstTick: number) {
+        super(boardSprite, firstTick, 200);
+    }
+
     apply(tank: Tank): void {
         tank.decreaseSpeed();
     }
@@ -36,7 +63,11 @@ export class Snail extends Bonus {
     }
 }
 
-export class Lighting extends Bonus {
+export class Speed extends Bonus {
+
+    constructor(boardSprite: BoardSprite, firstTick: number) {
+        super(boardSprite, firstTick, 200);
+    }
 
     apply(tank: Tank): void {
         tank.increaseSpeed();
@@ -45,4 +76,11 @@ export class Lighting extends Bonus {
     finishEffect(tank: Tank): void {
         tank.decreaseSpeed();
     }
+}
+
+export enum BonusType {
+    SHIELD,
+    LIFE,
+    SNAIL,
+    SPEED
 }

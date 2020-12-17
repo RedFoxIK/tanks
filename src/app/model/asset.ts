@@ -12,7 +12,7 @@ export enum BoardAsset {
 }
 
 export enum BonusAsset {
-    LIVE = 'assets/images/bonus/live.png',
+    LIFE = 'assets/images/bonus/live.png',
     SHIELD = 'assets/images/bonus/shield.png',
     SNAIL = 'assets/images/bonus/snail.png',
     SPEED = 'assets/images/bonus/speed.png',

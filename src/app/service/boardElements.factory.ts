@@ -1,7 +1,8 @@
 import {Block, BoardElement, BoardObject, Eagle, Leaf, Wall, Water} from "../model/boardElement";
 import {BoardSprite, SpriteWrapper} from "../model/spriteWrapper";
 import {SpriteService} from "./sprite.service";
-import {BoardAsset, TankAsset} from "../model/asset";
+import {BoardAsset, BonusAsset, TankAsset} from "../model/asset";
+import {BonusType, Speed} from "../model/bonus";
 
 export class BoardElementsFactory {
     private spriteService: SpriteService;
@@ -22,6 +23,19 @@ export class BoardElementsFactory {
                 return new Block(this.spriteService.createBoardElem(BoardAsset, BoardAsset.BLOCK, x, y));
             case BoardObject.EAGLE:
                 return new Eagle(this.spriteService.createBoardElem(BoardAsset, BoardAsset.EAGLE, x, y));
+        }
+    }
+
+    createBonusElem(bonusNumber: number, x: number, y: number, tick: number) {
+        switch (bonusNumber) {
+            case BonusType.SPEED:
+                return new Speed(this.spriteService.createBoardElem(BonusAsset, BonusAsset.SPEED, x, y), tick);
+            case BonusType.SNAIL:
+                return new Speed(this.spriteService.createBoardElem(BonusAsset, BonusAsset.SNAIL, x, y), tick);
+            case BonusType.SHIELD:
+                return new Speed(this.spriteService.createBoardElem(BonusAsset, BonusAsset.SHIELD, x, y), tick);
+            case BonusType.LIFE:
+                return new Speed(this.spriteService.createBoardElem(BonusAsset, BonusAsset.LIFE, x, y), tick);
         }
     }
 
