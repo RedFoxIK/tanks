@@ -195,8 +195,12 @@ export class GameManagerService {
 
     private resolveTankSituation(tank: Tank) {
         tank.takeLife();
+        console.log("isDead " + tank.isDead());
         if (tank.isDead()) {
             this.successGameOver$.next(false);
+        } else {
+            tank.boardSprite.changeX(this.playerTank.startX);
+            tank.boardSprite.changeY(this.playerTank.startY);
         }
     }
 }

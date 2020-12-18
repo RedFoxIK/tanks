@@ -3,6 +3,7 @@ import {BoardSprite} from "./spriteWrapper";
 import {Direction} from "./direction";
 
 export class Tank extends MovableBoardElement {
+    static initialSpeed = 0.05;
     readonly startX: number;
     readonly startY: number;
 
@@ -14,10 +15,10 @@ export class Tank extends MovableBoardElement {
 
     constructor(boardSprite: BoardSprite, tankType: TankType) {
         const direction = Direction.NONE;
-        super(boardSprite, true, 0.05, direction);
+        super(boardSprite, true, Tank.initialSpeed, direction);
 
-        this.startX = boardSprite.sprite.x;
-        this.startY = boardSprite.sprite.y;
+        this.startX = boardSprite.boardX;
+        this.startY = boardSprite.boardY;
 
         this.tankType = tankType;
 
@@ -27,6 +28,10 @@ export class Tank extends MovableBoardElement {
         if (tankType === TankType.ENEMY) {
             this.boardSprite.sprite.rotation = Math.PI * 2 * 0.5;
         }
+    }
+
+    setInitialSpeed() {
+        this.speed = Tank.initialSpeed;
     }
 
     createBullet(boardSprite: BoardSprite): boolean {
@@ -90,7 +95,6 @@ export class Tank extends MovableBoardElement {
         if (this.speed < 0.025) {
             this.speed = 0.025;
         }
-        console.log('speed  = ' + this.speed);
     }
 
     makeImmortal() {
