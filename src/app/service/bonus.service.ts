@@ -3,12 +3,16 @@ import {BoardElement, Point} from "../model/boardElement";
 import {SpriteService} from "./sprite.service";
 import {EnumUtilsService} from "./enum-utils.service";
 import {BoardElementsFactory} from "./boardElements.factory";
+import {Tank} from "../model/tank";
+import {SoundAsset} from "../model/asset";
 
 export class BonusService {
     readonly startWithBonuses = 500;
     readonly maxBonusesOnBoard = 2;
 
     private bonuses: Array<Bonus> = [];
+    private appliedBonuses: Array<Bonus> = [];
+
     private spriteService: SpriteService;
     private boardElementsFactory: BoardElementsFactory;
 
@@ -19,33 +23,64 @@ export class BonusService {
         this.boardElementsFactory = boardElementsFactory;
     }
 
-    handleBonuses(board: BoardElement | null [][]) {
+    handleBonuses(board: BoardElement | null [][], tanks: Array<Tank>) {
         this.tick += 1;
-        if (this.tick > this.startWithBonuses && this.bonuses.length < this.maxBonusesOnBoard && BonusService.getRandomInt(1000) % 20 == 0) {
+        if (this.tick > this.startWithBonuses && this.bonuses.length < this.maxBonusesOnBoard && BonusService.getRandomInt(1000) % 300 == 0) {
             this.generateNewBonus(board, this.tick);
         }
 
-        for (let i = 0; i < this.bonuses.length; i++) {
-            if (!this.bonuses[i].isActive(this.tick)) {
-                this.spriteService.removeSprites(this.bonuses[i].boardSprite)
-                this.bonuses.splice(i, 1);
+        this.areIntersectionsWithBonuses(tanks);
+
+        for (let i = 0; i < this.appliedBonuses.length; i++) {
+            if (this.appliedBonuses[i].isFinished()) {
+                this.appliedBonuses.slice(i, 1);
             }
         }
+
+        for (let i = 0; i < this.bonuses.length; i++) {
+            let currentBonus = this.bonuses[i];
+            currentBonus.boardSprite.sprite.alpha = currentBonus.isAlmostGone(this.tick) ? 0.5 : 1;
+
+            if (!currentBonus.isActive(this.tick)) {
+                this.removeBonusFromBoard(currentBonus, i);
+            }
+        }
+    }
+
+    private areIntersectionsWithBonuses(tanks: Array<Tank>): void {
+        tanks.forEach(tank => {
+            for (let i = 0; i < this.bonuses.length; i++) {
+                const bonus = this.bonuses[i];
+                // TODO: COLLISION
+                if (Math.round(tank.boardSprite.boardX) == bonus.boardSprite.boardX && Math.round(tank.boardSprite.boardY) == bonus.boardSprite.boardY) {
+                    this.spriteService.playSound(SoundAsset.BONUS_SOUND)
+                    this.removeBonusFromBoard(bonus, i);
+                    bonus.apply(tank);
+                    this.appliedBonuses.push(bonus)
+                }
+            }
+        })
+    }
+
+    private removeBonusFromBoard(bonus: Bonus, index: number): void {
+        this.spriteService.removeSprites(bonus.boardSprite)
+        console.log('BEFORE SLICE = ' + this.bonuses);
+
+        this.bonuses.splice(index, 1);
+
+        console.log('AFTER SLICE = ' + this.bonuses);
     }
 
     private generateNewBonus(board: BoardElement | null [][], tick: number) {
         const point = BonusService.retrieveRandomEmptyCeil(board);
         if (point) {
             const bonusType = BonusService.retrieveRandomBonus();
-            console.log(bonusType);
             this.bonuses.push(this.boardElementsFactory.createBonusElem(bonusType, point.x, point.y, tick));
-            console.log(this.bonuses)
         }
     }
 
     private static retrieveRandomBonus(): number {
         const bonusTypes = EnumUtilsService.getValues(BonusType);
-        console.log(bonusTypes);
         return bonusTypes[BonusService.getRandomInt(bonusTypes.length)];
     }
 

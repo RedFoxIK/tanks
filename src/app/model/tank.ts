@@ -76,12 +76,21 @@ export class Tank extends MovableBoardElement {
         return this.lifeAmount <= 0;
     }
 
-    increaseSpeed(): void {
-        this.speed += 1;
+    increaseSpeed(speed: number): void {
+        this.speed += speed;
+        if (this.speed > 0.1) {
+            this.speed = 0.1;
+        }
+
+        console.log('speed  = ' + this.speed);
     }
 
-    decreaseSpeed(): void {
-        this.speed -= 1;
+    decreaseSpeed(speed: number): void {
+        this.speed -= speed;
+        if (this.speed < 0.025) {
+            this.speed = 0.025;
+        }
+        console.log('speed  = ' + this.speed);
     }
 
     makeImmortal() {

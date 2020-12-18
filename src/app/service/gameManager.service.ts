@@ -88,7 +88,10 @@ export class GameManagerService {
 
     everyTick(delta: any) {
         this.moveTank();
-        this.bonusService.handleBonuses(this.board);
+        //TODO allTanks as field
+        let allTanks = this.enemies;
+        allTanks.push(this.playerTank);
+        this.bonusService.handleBonuses(this.board, allTanks);
 
         const newPoint = this.playerTank.moveBullet();
         let barrier = newPoint ? this.isCollisionDetectedForBullet(newPoint.x, newPoint.y, this.playerTank.getBulletDirection()) : null;
