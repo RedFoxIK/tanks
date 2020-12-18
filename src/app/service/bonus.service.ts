@@ -33,7 +33,7 @@ export class BonusService {
 
         for (let i = 0; i < this.appliedBonuses.length; i++) {
             if (this.appliedBonuses[i].isFinished()) {
-                this.appliedBonuses.slice(i, 1);
+                this.appliedBonuses.splice(i, 1);
             }
         }
 
@@ -64,11 +64,7 @@ export class BonusService {
 
     private removeBonusFromBoard(bonus: Bonus, index: number): void {
         this.spriteService.removeSprites(bonus.boardSprite)
-        console.log('BEFORE SLICE = ' + this.bonuses);
-
         this.bonuses.splice(index, 1);
-
-        console.log('AFTER SLICE = ' + this.bonuses);
     }
 
     private generateNewBonus(board: BoardElement | null [][], tick: number) {
