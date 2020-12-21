@@ -1,5 +1,6 @@
 import {Direction} from "./direction";
 import {BoardSprite} from "./spriteWrapper";
+import {EnumService} from "../service/enum.service";
 
 export abstract class BoardElement {
     boardSprite: BoardSprite;
@@ -58,46 +59,52 @@ export class MovableBoardElement extends BoardElement {
         return this.direction;
     }
 
-    //TODO: 2 functions
-    move(check: boolean): {x: number, y: number} {
+    move(newPoint: Point) {
+        if (newPoint != null) {
+            this.boardSprite.changeX(newPoint.x);
+            this.boardSprite.changeY(newPoint.y);
+
+            if (this.direction != Direction.NONE) {
+                this.boardSprite.sprite.rotation = this.direction;
+            }
+        }
+    }
+
+    retrieveNextMovement(): Point | null {
         let newX = this.boardSprite.boardX;
         let newY = this.boardSprite.boardY;
-        let rotation = this.boardSprite.sprite.rotation;
 
         switch (this.direction) {
             case Direction.UP:
-                rotation = 0;
                 newY -= this.speed;
                 break;
             case Direction.DOWN:
-                rotation = Math.PI * 2 * 0.5;
                 newY += this.speed;
                 break;
             case Direction.RIGHT:
-                rotation = Math.PI * 2 * 0.25;
                 newX += this.speed;
                 break;
             case Direction.LEFT:
-                rotation = -Math.PI * 2 * 0.25;
                 newX -= this.speed;
                 break;
+            case Direction.NONE:
+                return null;
         }
-        if (!check) {
-            this.boardSprite.sprite.rotation = rotation;
-            this.boardSprite.changeX(newX);
-            this.boardSprite.changeY(newY);
-        }
-        return {x: newX, y: newY};
+        return new Point(newX, newY);
+    }
+
+    isElemOnBoard() {
+        return this.boardSprite.boardX >= 0 && this.boardSprite.boardY >= 0 &&
+            this.boardSprite.boardX < 32 && this.boardSprite.boardY < 32;
+    }
+
+    removeFromBoard() {
+        this.move(new Point(-1, -1));
     }
 
     protected resolveDirectionByRotation(rotation: number): Direction {
-        switch (rotation) {
-            case 0: return Direction.UP;
-            case Math.PI * 2 * 0.5: return Direction.DOWN;
-            case Math.PI * 2 * 0.25: return Direction.RIGHT;
-            case -Math.PI * 2 * 0.25: return Direction.LEFT;
-            default: return Direction.NONE;
-        }
+        const direction = EnumService.getKey(Direction, rotation);
+        return direction ? Direction[direction] : Direction.NONE;
     }
 }
 

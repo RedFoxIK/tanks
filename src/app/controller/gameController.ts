@@ -68,19 +68,19 @@ export class GameController {
         switch (e.code) {
             case "ArrowUp":
             case "KeyW":
-                this.gameManagerService.playerTank.setDirection(Direction.UP)
+                this.gameManagerService.board.getPlayerTank().setDirection(Direction.UP)
                 break;
             case "ArrowDown":
             case "KeyS":
-                this.gameManagerService.playerTank.setDirection(Direction.DOWN);
+                this.gameManagerService.board.getPlayerTank().setDirection(Direction.DOWN);
                 break;
             case "ArrowLeft":
             case "KeyA":
-                this.gameManagerService.playerTank.setDirection(Direction.LEFT);
+                this.gameManagerService.board.getPlayerTank().setDirection(Direction.LEFT);
                 break;
             case "ArrowRight":
             case "KeyD":
-                this.gameManagerService.playerTank.setDirection(Direction.RIGHT);
+                this.gameManagerService.board.getPlayerTank().setDirection(Direction.RIGHT);
                 break;
             case "Space":
                 this.gameManagerService.shoot();
@@ -89,7 +89,7 @@ export class GameController {
 
     private keyUp(e) {
         if (GameController.movements.indexOf(e.code) > -1) {
-            this.gameManagerService.playerTank.setDirection(Direction.NONE);
+            this.gameManagerService.board.getPlayerTank().setDirection(Direction.NONE);
         }
     }
 

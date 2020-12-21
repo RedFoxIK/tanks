@@ -1,6 +1,6 @@
-export class EnumUtilsService {
+export class EnumService {
 
-    static getKey(e: any, eValue: string): string {
+    static getKey(e: any, eValue: string | number): string {
         return Object.keys(e).filter(key => e[key] === eValue)[0];
     }
 
@@ -10,10 +10,6 @@ export class EnumUtilsService {
     }
 
     static applyFunction(callback: Function, ...enums: any) {
-        enums.forEach(e =>
-            Object.keys(e).forEach(key => {
-                callback(key, e[key]);
-            })
-        );
+        enums.forEach(e => Object.keys(e).forEach(key => callback(key, e[key])));
     }
 }

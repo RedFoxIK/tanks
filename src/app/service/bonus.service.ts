@@ -1,10 +1,11 @@
 import {Bonus, BonusType} from "../model/bonus";
-import {BoardElement, Point} from "../model/boardElement";
+import {Point} from "../model/boardElement";
 import {SpriteService} from "./sprite.service";
-import {EnumUtilsService} from "./enum-utils.service";
+import {EnumService} from "./enum.service";
 import {BoardElementsFactory} from "./boardElements.factory";
-import {Tank} from "../model/tank";
 import {SoundAsset} from "../model/asset";
+import {Board} from "../model/board";
+import {CollisionResolverService} from "./collisionResolver.service";
 
 export class BonusService {
     readonly startWithBonuses = 500;
@@ -23,13 +24,13 @@ export class BonusService {
         this.boardElementsFactory = boardElementsFactory;
     }
 
-    handleBonuses(board: BoardElement | null [][], tanks: Array<Tank>) {
+    handleBonuses(board: Board) {
         this.tick += 1;
         if (this.tick > this.startWithBonuses && this.bonuses.length < this.maxBonusesOnBoard && BonusService.getRandomInt(1000) % 300 == 0) {
             this.generateNewBonus(board, this.tick);
         }
 
-        this.areIntersectionsWithBonuses(tanks);
+        this.areIntersectionsWithBonuses(board);
 
         for (let i = 0; i < this.appliedBonuses.length; i++) {
             if (this.appliedBonuses[i].isFinished()) {
@@ -47,12 +48,11 @@ export class BonusService {
         }
     }
 
-    private areIntersectionsWithBonuses(tanks: Array<Tank>): void {
-        tanks.forEach(tank => {
+    private areIntersectionsWithBonuses(board: Board): void {
+        board.getAllTanks().forEach(tank => {
             for (let i = 0; i < this.bonuses.length; i++) {
                 const bonus = this.bonuses[i];
-                // TODO: COLLISION
-                if (Math.round(tank.boardSprite.boardX) == bonus.boardSprite.boardX && Math.round(tank.boardSprite.boardY) == bonus.boardSprite.boardY) {
+                if (CollisionResolverService.isBonusTakenByTank(bonus, tank)) {
                     this.spriteService.playSound(SoundAsset.BONUS_SOUND)
                     this.removeBonusFromBoard(bonus, i);
                     bonus.apply(tank);
@@ -67,7 +67,7 @@ export class BonusService {
         this.bonuses.splice(index, 1);
     }
 
-    private generateNewBonus(board: BoardElement | null [][], tick: number) {
+    private generateNewBonus(board: Board, tick: number) {
         const point = BonusService.retrieveRandomEmptyCeil(board);
         if (point) {
             const bonusType = BonusService.retrieveRandomBonus();
@@ -76,15 +76,15 @@ export class BonusService {
     }
 
     private static retrieveRandomBonus(): number {
-        const bonusTypes = EnumUtilsService.getValues(BonusType);
+        const bonusTypes = EnumService.getValues(BonusType);
         return bonusTypes[BonusService.getRandomInt(bonusTypes.length)];
     }
 
-    private static retrieveRandomEmptyCeil(board: BoardElement | null [][]): Point | null {
+    private static retrieveRandomEmptyCeil(board: Board): Point | null {
         const emptyCeils = [];
         for (let i = 0; i < 32; i++) {
-            for (let j = 0; j < board[i].length; j++) {
-                if (!board[i][j]) {
+            for (let j = 0; j < Board.BOARD_SIZE; j++) {
+                if (!board.getBoardElemToBoard(i,j)) {
                     emptyCeils.push(new Point(i, j));
                 }
             }

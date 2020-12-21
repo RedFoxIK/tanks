@@ -1,19 +1,58 @@
 import {BoardElement} from "./boardElement";
+import {Tank, TankType} from "./tank";
 
 export class Board {
-    readonly width: number;
-    readonly height: number;
+    static BOARD_SIZE = 32;
 
-    boardElements: Array<BoardElement>;
+    private boardElements: BoardElement | null [][];
+    private playerTank: Tank;
+    private othersTanks: Tank[] = [];
+    private allTanks: Tank[] = [];
 
-    constructor(boardElements: Array<BoardElement>) {
-        this.width = 32;
-        this.height = 32;
-
-        this.boardElements = boardElements;
+    constructor() {
+        this.boardInitialize();
     }
 
-    removeDestroyedObjects(): void {
-        this.boardElements = this.boardElements.filter(boardEl => !boardEl.isDestroyed())
+    addTankToBoard(tank: Tank) {
+        if (tank.tankType == TankType.PLAYER) {
+            this.playerTank = tank;
+        } else {
+            this.othersTanks.push(tank);
+        }
+        this.allTanks.push(tank);
+    }
+
+    addBoardElemToBoard(elem: BoardElement, x: number, y: number) {
+        this.boardElements[x][y] = elem;
+    }
+
+    getBoardElemToBoard(x: number, y: number): BoardElement {
+        return this.boardElements[x][y];
+    }
+
+    getPlayerTank(): Tank {
+        return this.playerTank;
+    }
+
+    getOthersTanks(): Tank[] {
+        return this.othersTanks;
+    }
+
+    getAllTanks(): Tank[] {
+        return this.allTanks;
+    }
+
+    removeElem(x: number, y: number) {
+        this.boardElements[x][y] = null;
+    }
+
+    private boardInitialize() {
+        this.boardElements = [];
+        for (let i = 0; i < 32; i++) {
+            this.boardElements[i] = [];
+            for (let j = 0; j < 32; j++) {
+                this.boardElements[i][j] = null;
+            }
+        }
     }
 }

@@ -1,9 +1,11 @@
-import {MovableBoardElement} from "./boardElement";
+import {MovableBoardElement, Point} from "./boardElement";
 import {BoardSprite} from "./spriteWrapper";
 import {Direction} from "./direction";
+import {Subject} from "rxjs";
 
 export class Tank extends MovableBoardElement {
-    static initialSpeed = 0.05;
+    static INITIAL_SPEED = 0.05;
+
     readonly startX: number;
     readonly startY: number;
 
@@ -11,50 +13,49 @@ export class Tank extends MovableBoardElement {
     private isImmortal: boolean;
 
     readonly tankType: TankType;
-    private bullet: Bullet | null;
+    readonly bullet: Bullet;
 
-    private bulletSprite: BoardSprite;
+    lifeTaken$: Subject<Tank>;
 
     constructor(boardSprite: BoardSprite, tankType: TankType, bulletSprite: BoardSprite) {
         const direction = Direction.NONE;
-        super(boardSprite, true, Tank.initialSpeed, direction);
+        super(boardSprite, true, Tank.INITIAL_SPEED, direction);
 
         this.startX = boardSprite.boardX;
         this.startY = boardSprite.boardY;
 
         this.tankType = tankType;
+        this.bullet = new Bullet(bulletSprite)
 
         this.lifeAmount = 1;
         this.isImmortal = false;
 
-        this.bulletSprite = bulletSprite;
         if (tankType === TankType.ENEMY) {
-            this.boardSprite.sprite.rotation = Math.PI * 2 * 0.5;
+            this.boardSprite.sprite.rotation = Direction.DOWN;
         }
+        this.lifeTaken$ = new Subject<Tank>();
     }
 
     setInitialSpeed() {
-        this.speed = Tank.initialSpeed;
+        this.speed = Tank.INITIAL_SPEED;
     }
 
-    createBullet(): boolean {
-        if (!this.bullet) {
+    activateBullet(): boolean {
+        if (!this.bullet.isActive()) {
             const bulletDirection = this.getDirection() !== Direction.NONE ? this.getDirection() :
                 this.resolveDirectionByRotation(this.boardSprite.sprite.rotation);
-
-            this.bulletSprite.changeX(this.boardSprite.boardX);
-            this.bulletSprite.changeY(this.boardSprite.boardY);
-
-            this.bullet = new Bullet(this.bulletSprite, bulletDirection);
+            this.bullet.activate(new Point(this.boardSprite.boardX, this.boardSprite.boardY), bulletDirection);
             return true
         }
         return false;
     }
 
-    moveBullet(): {x: number, y: number} {
-        if (this.bullet) {
-            return this.bullet.move(false);
+    moveBullet(): Point {
+        if (this.bullet.isActive()) {
+            const newPoint = this.bullet.retrieveNextMovement();
+            this.bullet.move(newPoint);
         }
+        return null;
     }
 
     getBulletDirection() {
@@ -62,10 +63,7 @@ export class Tank extends MovableBoardElement {
     }
 
     explodeBullet(): void {
-        this.bullet = null;
-
-        this.bulletSprite.changeX(-1);
-        this.bulletSprite.changeY(-1);
+        this.bullet.deactivate();
     }
 
     getBullet() {
@@ -78,6 +76,7 @@ export class Tank extends MovableBoardElement {
 
     takeLife(): void {
         this.lifeAmount -= 1;
+        this.lifeTaken$.next(this);
     }
 
     takeWound(shooter: Tank): void {
@@ -118,9 +117,27 @@ export enum TankType {
 }
 
 export class Bullet extends MovableBoardElement {
-    constructor(boardSprite: BoardSprite, direction: Direction) {
-        super(boardSprite, true, 0.15, direction);
-        // this.boardSprite.sprite.width = BoardSprite.size / 2;
-        // this.boardSprite.sprite.height = BoardSprite.size / 2;
+    constructor(boardSprite: BoardSprite) {
+        super(boardSprite, true, 0.15, Direction.NONE);
+    }
+
+    activate(point: Point, direction: Direction) {
+        this.setDirection(direction);
+        this.move(point);
+    }
+
+    deactivate() {
+        return this.removeFromBoard();
+    }
+
+    isActive() {
+        return this.isElemOnBoard();
+    }
+
+    retrieveNextMovement(): Point | null {
+        if (this.isActive()) {
+            return super.retrieveNextMovement();
+        }
+        return null;
     }
 }

@@ -1,9 +1,9 @@
 import * as PIXI from "pixi.js";
 import { default as PIXI_SOUND } from 'pixi-sound';
 import {BoardSprite, SpriteWrapper} from "../model/spriteWrapper";
-import {EnumUtilsService} from "./enum-utils.service";
 import {AnimationAsset, BoardAsset, BonusAsset, ButtonAsset, SoundAsset, TankAsset} from "../model/asset";
 import {Sprite} from "pixi.js";
+import {EnumService} from "./enum.service";
 
 export class SpriteService {
     readonly stage: PIXI.Container;
@@ -37,7 +37,7 @@ export class SpriteService {
     }
 
     loadAssets(onProgressFn: Function, onCompleteFn: Function) {
-        EnumUtilsService.applyFunction((key, value) => this.loader.add(key, value),
+        EnumService.applyFunction((key, value) => this.loader.add(key, value),
             ButtonAsset, BoardAsset, BonusAsset, TankAsset, AnimationAsset);
         this.loader.load();
 
@@ -47,7 +47,7 @@ export class SpriteService {
             onCompleteFn()
         });
 
-        EnumUtilsService.applyFunction((key, value) => PIXI_SOUND.add(key, value),
+        EnumService.applyFunction((key, value) => PIXI_SOUND.add(key, value),
             SoundAsset);
     }
 
@@ -119,11 +119,11 @@ export class SpriteService {
     }
 
     playSound(soundAssetValue: string) {
-        PIXI_SOUND.play(EnumUtilsService.getKey(SoundAsset, soundAssetValue));
+        PIXI_SOUND.play(EnumService.getKey(SoundAsset, soundAssetValue));
     }
 
     playAnimation(animAssetValue: string, x: number, y: number, oncomplete?: Function) {
-        const animationKey = EnumUtilsService.getKey(AnimationAsset, animAssetValue);
+        const animationKey = EnumService.getKey(AnimationAsset, animAssetValue);
         const animation = new PIXI.AnimatedSprite(this.loader.resources[animationKey].spritesheet.animations['animation']);
 
         const spriteWrapper = new BoardSprite(animation, x, y, true, 3);
@@ -141,7 +141,7 @@ export class SpriteService {
     }
 
     private createSprite(assetEnum: any, assetValue: string): Sprite {
-        const texture = !this.isPreloadedPhase ? this.loader.resources[EnumUtilsService.getKey(assetEnum, assetValue)].texture :
+        const texture = !this.isPreloadedPhase ? this.loader.resources[EnumService.getKey(assetEnum, assetValue)].texture :
             PIXI.Texture.from(assetValue);
         return new PIXI.Sprite(texture);
     }
