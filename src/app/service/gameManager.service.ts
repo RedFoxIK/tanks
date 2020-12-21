@@ -1,5 +1,5 @@
 import {BoardElement, BoardObject, Eagle, Water} from "../model/boardElement";
-import {AnimationAsset, SoundAsset, TankAsset} from "../model/asset";
+import {AnimationAsset, SoundAsset} from "../model/asset";
 import tanksResponse from "../api/tanks.json";
 import {Tank, TankType} from "../model/tank";
 import {Direction} from "../model/direction";
@@ -101,6 +101,7 @@ export class GameManagerService {
             }
         }
         this.enemies.forEach(tank => this.moveEnemyTank(tank));
+        this.spriteService.rerenderScene();
     }
 
     private moveEnemyTank(tank: Tank) {
@@ -145,6 +146,10 @@ export class GameManagerService {
 
     //TODO pass tank
     private isCollisionDetected(newX: number, newY: number, direction: Direction): boolean {
+        if (newX === -1 || newY == -1) {
+            return false;
+        }
+
         let leftCeil;
         let rightCeil;
 
@@ -200,10 +205,14 @@ export class GameManagerService {
     private resolveTankSituation(tank: Tank) {
         tank.takeLife();
         if (tank.isDead()) {
-            this.successGameOver$.next(false);
+           tank.tankType == TankType.PLAYER ? this.successGameOver$.next(false) : this.spriteService.removeSprites(tank.boardSprite);
         } else {
-            tank.boardSprite.changeX(this.playerTank.startX);
-            tank.boardSprite.changeY(this.playerTank.startY);
+            tank.boardSprite.changeX(-1);
+            tank.boardSprite.changeY(-1);
+            setTimeout(() => {
+                tank.boardSprite.changeX(this.playerTank.startX);
+                tank.boardSprite.changeY(this.playerTank.startY);
+            }, 800);
         }
     }
 }

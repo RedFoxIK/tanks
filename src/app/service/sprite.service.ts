@@ -104,8 +104,8 @@ export class SpriteService {
                 this.container.children[aboveElemInxWillBeSwapped[i]] = this.container.children[bottomElemInxWillBeSwapped[i]];
                 this.container.children[bottomElemInxWillBeSwapped[i]] = temp;
             }
+            this.renderer.render(this.container);
         }
-        this.renderer.render(this.container);
     }
 
     removeSprites(...spriteWrappers: SpriteWrapper[]): void {
