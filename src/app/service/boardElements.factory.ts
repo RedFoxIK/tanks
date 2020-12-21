@@ -1,8 +1,8 @@
-import {Block, BoardElement, BoardObject, Eagle, Leaf, Wall, Water} from "../model/boardElement";
-import {BoardSprite, SpriteWrapper} from "../model/spriteWrapper";
+import {Block, BoardObject, Eagle, Leaf, Wall, Water} from "../model/boardElement";
 import {SpriteService} from "./sprite.service";
 import {BoardAsset, BonusAsset, TankAsset} from "../model/asset";
 import {BonusType, Life, Shield, Snail, Speed} from "../model/bonus";
+import {Tank, TankType} from "../model/tank";
 
 export class BoardElementsFactory {
     private spriteService: SpriteService;
@@ -37,6 +37,16 @@ export class BoardElementsFactory {
             case BonusType.LIFE:
                 return new Life(this.spriteService.createBoardElem(BonusAsset, BonusAsset.LIFE, x, y), tick);
         }
+    }
+
+    createTank(x: number, y: number, tankType: TankType) {
+        const typeBullet = tankType == TankType.PLAYER ? TankAsset.BULLET : TankAsset.ENEMY_BULLET;
+        const bulletSprite = this.spriteService.createBoardElem(TankAsset, typeBullet, -1, -1, 0.5, true);
+
+        const tankAssetType = tankType == TankType.PLAYER ? TankAsset.TANK : TankAsset.ENEMY_TANK_1;
+        const boardSprite = this.spriteService.createBoardElem(TankAsset, tankAssetType, x, y, 1, true, true);
+
+        return new Tank(boardSprite, tankType, bulletSprite);
     }
 
     private static resolveWallByType(wallType: number): string {

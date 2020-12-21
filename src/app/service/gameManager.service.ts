@@ -18,7 +18,8 @@ export class GameManagerService {
 
     private game: Game;
     private board: BoardElement | null [][];
-    private enemies: Tank[];
+    private enemies: Tank[] = [];
+    private allTanks: Tank[] = [];
     playerTank: Tank;
 
     private takeLife$ = new Subject<Tank>();
@@ -28,7 +29,6 @@ export class GameManagerService {
         this.game = game;
         this.spriteService = spriteService;
         this.boardElementFactory = new BoardElementsFactory(this.spriteService);
-        this.enemies = [];
         this.boardInitialize();
         this.takeLife$.subscribe(tank => this.resolveTankSituation(tank));
         this.bonusService = new BonusService(this.spriteService, this.boardElementFactory);
@@ -49,17 +49,19 @@ export class GameManagerService {
             });
         })
 
-        this.createTank(TankAsset, TankAsset.TANK, tanksResponse.player.x, tanksResponse.player.y, TankType.PLAYER);
+        this.createTank(tanksResponse.player.x, tanksResponse.player.y, TankType.PLAYER);
         tanksResponse.enemies.forEach(enemy => {
-            this.createTank(TankAsset, TankAsset.ENEMY_TANK_1, enemy.x, enemy.y, TankType.ENEMY);
+            this.createTank(enemy.x, enemy.y, TankType.ENEMY);
         })
         this.spriteService.rerenderScene();
         this.spriteService.playSound(SoundAsset.WIN_SOUND);
+
+        this.allTanks.push(...this.enemies);
+        this.allTanks.push(this.playerTank);
     }
 
-    createTank(assetEnum, assetEnumValue: string, x: number, y: number, tankType: TankType) {
-        const boardSprite = this.spriteService.createBoardElem(assetEnum, assetEnumValue, x, y, 1, true, true);
-        const tank = new Tank(boardSprite, tankType);
+    createTank(x: number, y: number, tankType: TankType) {
+        const tank = this.boardElementFactory.createTank(x, y, tankType);
         if (tankType == TankType.PLAYER) {
             this.playerTank = tank;
         } else {
@@ -72,38 +74,40 @@ export class GameManagerService {
         if (!this.isCollisionDetected(point.x, point.y, this.playerTank.getDirection())) {
             this.playerTank.move(false);
         }
-        this.spriteService.rerenderScene();
     }
 
     public shoot() {
         //TODO SCALE in elem //ONE time create please
-        const boardSprite = this.spriteService.createBoardElem(TankAsset, TankAsset.BULLET, this.playerTank.getX(), this.playerTank.getY(), 0.5, true);
-        const newBulletCreated = this.playerTank.createBullet(boardSprite);
-        if (!newBulletCreated) {
-            this.spriteService.removeSprites(boardSprite);
-        } else {
+        const newBulletCreated = this.playerTank.createBullet();
+        if (newBulletCreated) {
             this.spriteService.playSound(SoundAsset.SHOOT_SOUND);
         }
     }
 
-    everyTick(delta: any) {
+    everyTick() {
         this.moveTank();
-        //TODO allTanks as field
-        let allTanks = this.enemies;
-        allTanks.push(this.playerTank);
-        this.bonusService.handleBonuses(this.board, allTanks);
+        this.bonusService.handleBonuses(this.board, this.allTanks);
 
         const newPoint = this.playerTank.moveBullet();
         let barrier = newPoint ? this.isCollisionDetectedForBullet(newPoint.x, newPoint.y, this.playerTank.getBulletDirection()) : null;
 
         if (barrier) {
-            this.spriteService.removeSprites(this.playerTank.getBullet().boardSprite);
             this.playerTank.explodeBullet();
             let onComplete = barrier.isDestroyable ? () => this.removeBoardElem(barrier) : () => {};
             this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, newPoint.x, newPoint.y, onComplete);
+
             if (barrier instanceof Eagle) {
                 this.successGameOver$.next(false);
             }
+        }
+        this.enemies.forEach(tank => this.moveEnemyTank(tank));
+    }
+
+    private moveEnemyTank(tank: Tank) {
+        tank.setDirection(Direction.DOWN);
+        const point = tank.move(true);
+        if (!this.isCollisionDetected(point.x, point.y, tank.getDirection())) {
+            tank.move(false);
         }
     }
 
@@ -195,7 +199,6 @@ export class GameManagerService {
 
     private resolveTankSituation(tank: Tank) {
         tank.takeLife();
-        console.log("isDead " + tank.isDead());
         if (tank.isDead()) {
             this.successGameOver$.next(false);
         } else {

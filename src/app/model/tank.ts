@@ -13,7 +13,9 @@ export class Tank extends MovableBoardElement {
     readonly tankType: TankType;
     private bullet: Bullet | null;
 
-    constructor(boardSprite: BoardSprite, tankType: TankType) {
+    private bulletSprite: BoardSprite;
+
+    constructor(boardSprite: BoardSprite, tankType: TankType, bulletSprite: BoardSprite) {
         const direction = Direction.NONE;
         super(boardSprite, true, Tank.initialSpeed, direction);
 
@@ -25,6 +27,7 @@ export class Tank extends MovableBoardElement {
         this.lifeAmount = 1;
         this.isImmortal = false;
 
+        this.bulletSprite = bulletSprite;
         if (tankType === TankType.ENEMY) {
             this.boardSprite.sprite.rotation = Math.PI * 2 * 0.5;
         }
@@ -34,12 +37,15 @@ export class Tank extends MovableBoardElement {
         this.speed = Tank.initialSpeed;
     }
 
-    createBullet(boardSprite: BoardSprite): boolean {
+    createBullet(): boolean {
         if (!this.bullet) {
             const bulletDirection = this.getDirection() !== Direction.NONE ? this.getDirection() :
                 this.resolveDirectionByRotation(this.boardSprite.sprite.rotation);
 
-            this.bullet = new Bullet(boardSprite, bulletDirection);
+            this.bulletSprite.changeX(this.boardSprite.boardX);
+            this.bulletSprite.changeY(this.boardSprite.boardY);
+
+            this.bullet = new Bullet(this.bulletSprite, bulletDirection);
             return true
         }
         return false;
@@ -57,6 +63,9 @@ export class Tank extends MovableBoardElement {
 
     explodeBullet(): void {
         this.bullet = null;
+
+        this.bulletSprite.changeX(-1);
+        this.bulletSprite.changeY(-1);
     }
 
     getBullet() {

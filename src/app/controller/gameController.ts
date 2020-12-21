@@ -40,8 +40,12 @@ export class GameController {
                 break;
             case GameState.IN_PROGRESS:
                 this.viewRenderService.renderGameScene(boardMapResponse);
-                this.addEventListeners();
-                this.animateScene();
+
+                //TODO another controller
+                setTimeout(() => {
+                    this.addEventListeners();
+                    this.animateScene();
+                }, 1000);
                 break;
             case GameState.LOOSE:
                 this.ticker.stop();
@@ -90,8 +94,8 @@ export class GameController {
     }
 
     private animateScene() {
-        this.ticker.add((deltaTime) => {
-            this.gameManagerService.everyTick(deltaTime);
+        this.ticker.add(() => {
+            this.gameManagerService.everyTick();
         });
         this.ticker.start();
     }
