@@ -9,7 +9,7 @@ export abstract class Bonus extends BoardElement {
     protected tank: Tank;
 
     private lastTicks = 200;
-    private appliedTicks = 300;
+    private appliedTicks = 500;
 
     protected constructor(boardSprite: BoardSprite, firstTick: number, lifeTick: number) {
         super(boardSprite, false, false, true);
@@ -48,14 +48,12 @@ export class Shield extends Bonus {
     apply(tank: Tank): void {
         this.tank = tank;
         tank.makeImmortal();
-        this.boardSprite.sprite.alpha = 0.5;
-        console.log('Immortaml');
+        this.tank.boardSprite.sprite.alpha = 0.5;
     }
 
     finishEffect(): void {
         this.tank.takeAwayImmortal();
-        this.boardSprite.sprite.alpha = 1;
-        console.log('Not immortaml');
+        this.tank.boardSprite.sprite.alpha = 1;
     }
 }
 
@@ -91,7 +89,7 @@ export class Snail extends Bonus {
 export class Speed extends Bonus {
 
     constructor(boardSprite: BoardSprite, firstTick: number) {
-        super(boardSprite, firstTick, 450);
+        super(boardSprite, firstTick, 700);
     }
 
     apply(tank: Tank): void {

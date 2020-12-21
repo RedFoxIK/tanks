@@ -86,8 +86,6 @@ export class Tank extends MovableBoardElement {
         if (this.speed > 0.1) {
             this.speed = 0.1;
         }
-
-        console.log('speed  = ' + this.speed);
     }
 
     decreaseSpeed(speed: number): void {
