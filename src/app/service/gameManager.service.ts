@@ -112,13 +112,22 @@ export class GameManagerService {
         this.board.getPlayerTank().getBullet().move(newPoint);
         CollisionResolverService.retrieveTargetForBullet(this.board.getPlayerTank().getBullet(), this.board);
 
+        const bullets = this.board.getOthersTanks().map(tank => tank.getBullet());
+        bullets.forEach(b => {
+            const newPoint = b.retrieveNextMovement();
+            b.move(newPoint);
+            CollisionResolverService.retrieveTargetForBullet(b, this.board);
+        });
+
         this.board.getOthersTanks().forEach(tank => this.moveEnemyTank(tank));
         CollisionResolverService.calculateBulletsWithTankCollisions(this.board);
+
         this.spriteService.rerenderScene();
     }
 
     private moveEnemyTank(tank: Tank) {
         tank.setDirection(Direction.DOWN);
+        tank.activateBullet();
         const point = tank.retrieveNextMovement();
         if (!CollisionResolverService.isCollisionDetectedForTank(tank, point, this.board)) {
             tank.move(point);

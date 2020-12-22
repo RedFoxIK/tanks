@@ -78,19 +78,33 @@ export class CollisionResolverService {
     }
 
     static calculateBulletsWithTankCollisions(board: Board) {
-        if (board.getPlayerTank().getBullet().isActive()) {
-            const bullet = board.getPlayerTank().getBullet();
+        const playerBullet = board.getPlayerTank().getBullet();
+        const bullets = board.getOthersTanks().map(tank => tank.getBullet()).filter(b => b.isActive());
 
+        if (playerBullet.isActive()) {
             //TODO filter and first tank
             board.getOthersTanks().forEach(tank => {
                 //TODO function
-                if (Math.round(tank.boardSprite.boardX) == Math.round(bullet.boardSprite.boardX)
-                    && Math.round(tank.boardSprite.boardY) == Math.round(bullet.boardSprite.boardY)) {
+                if (Math.round(tank.boardSprite.boardX) == Math.round(playerBullet.boardSprite.boardX)
+                    && Math.round(tank.boardSprite.boardY) == Math.round(playerBullet.boardSprite.boardY)) {
                     board.getPlayerTank().getBullet().explode();
-                    bullet.killTank$.next(tank);
+                    playerBullet.killTank$.next(tank);
                 }
             })
         }
+
+        bullets.forEach(b => {
+            if (Math.round(playerBullet.boardSprite.boardX) == Math.round(b.boardSprite.boardX)
+                && Math.round(playerBullet.boardSprite.boardY) == Math.round(b.boardSprite.boardY)) {
+                playerBullet.explode$.next(playerBullet);
+                b.explode$.next(b);
+            }
+            if (Math.round(board.getPlayerTank().boardSprite.boardX) == Math.round(b.boardSprite.boardX)
+                && Math.round(board.getPlayerTank().boardSprite.boardY) == Math.round(b.boardSprite.boardY)) {
+                board.getPlayerTank().getBullet().explode();
+                b.killTank$.next(board.getPlayerTank());
+            }
+        })
     }
 
     static tanksCollisionDetected(tank1: Tank, tank2: Tank): boolean {
