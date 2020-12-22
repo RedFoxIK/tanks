@@ -58,14 +58,6 @@ export class Tank extends MovableBoardElement {
         return null;
     }
 
-    getBulletDirection() {
-        return this.bullet ? this.bullet.getDirection() : Direction.NONE;
-    }
-
-    explodeBullet(): void {
-        this.bullet.explode();
-    }
-
     getBullet() {
         return this.bullet;
     }
@@ -117,12 +109,14 @@ export enum TankType {
 }
 
 export class Bullet extends MovableBoardElement {
-    explode$: Subject<Tank>;
+    killTank$: Subject<Tank>;
+    explode$: Subject<Bullet>;
 
     constructor(boardSprite: BoardSprite) {
         super(boardSprite, true, 0.15, Direction.NONE);
 
-        this.explode$ = new Subject<Tank>();
+        this.killTank$ = new Subject<Tank>();
+        this.explode$ = new Subject<Bullet>();
     }
 
     activate(point: Point, direction: Direction) {
@@ -130,10 +124,7 @@ export class Bullet extends MovableBoardElement {
         this.move(point);
     }
 
-    explode(tank?: Tank) {
-        if (tank) {
-            this.explode$.next(tank);
-        }
+    explode() {
         this.removeFromBoard();
     }
 

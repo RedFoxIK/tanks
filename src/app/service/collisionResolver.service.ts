@@ -33,7 +33,8 @@ export class CollisionResolverService {
         }
         const water = board.getBoardElemToBoard(Math.round(newPoint.x), Math.round(newPoint.y));
         if (water != null && water instanceof Water) {
-            tank.takeLife();
+            tank.takeLife()
+            return true;
         }
         if (leftCeil != null && leftCeil.isBarrier || rightCeil != null && rightCeil.isBarrier) {
             return true;
@@ -43,7 +44,7 @@ export class CollisionResolverService {
             .filter(t => this.tanksCollisionDetected(t, tank)).length > 0;
     }
 
-    static retrieveTargetForBullet(bullet: Bullet,  board: Board): BoardElement | null {
+    static retrieveTargetForBullet(bullet: Bullet,  board: Board): void {
         if (!bullet.isElemOnBoard() || !bullet.isActive()) {
             return null;
         }
@@ -69,9 +70,11 @@ export class CollisionResolverService {
                 break;
         }
         if (currentCeil != null && !currentCeil.isSkippedByBullet) {
-            return currentCeil;
+            bullet.explode$.next(bullet);
         }
-        return nextCeil != null && !nextCeil.isDestroyable && !nextCeil.isSkippedByBullet ? nextCeil : null;
+        if (nextCeil != null && !nextCeil.isDestroyable && !nextCeil.isSkippedByBullet) {
+            bullet.explode$.next(bullet)
+        }
     }
 
     static calculateBulletsWithTankCollisions(board: Board) {
@@ -83,9 +86,8 @@ export class CollisionResolverService {
                 //TODO function
                 if (Math.round(tank.boardSprite.boardX) == Math.round(bullet.boardSprite.boardX)
                     && Math.round(tank.boardSprite.boardY) == Math.round(bullet.boardSprite.boardY)) {
-                    tank.takeLife();
                     board.getPlayerTank().getBullet().explode();
-                    bullet.explode$.next(tank);
+                    bullet.killTank$.next(tank);
                 }
             })
         }

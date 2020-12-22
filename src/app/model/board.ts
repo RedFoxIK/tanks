@@ -26,8 +26,8 @@ export class Board {
         this.boardElements[x][y] = elem;
     }
 
-    getBoardElemToBoard(x: number, y: number): BoardElement {
-        return this.boardElements[x][y];
+    getBoardElemToBoard(x: number, y: number): BoardElement | null {
+        return this.boardElements[Math.round(x)][Math.round(y)];
     }
 
     getPlayerTank(): Tank {

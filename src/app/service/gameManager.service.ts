@@ -1,7 +1,7 @@
 import {BoardElement, BoardObject, Eagle, Water} from "../model/boardElement";
 import {AnimationAsset, SoundAsset} from "../model/asset";
 import tanksResponse from "../api/tanks.json";
-import {Tank, TankType} from "../model/tank";
+import {Bullet, Tank, TankType} from "../model/tank";
 import {Direction} from "../model/direction";
 import {Game} from "../model/game";
 import {SpriteService} from "./sprite.service";
@@ -20,7 +20,8 @@ export class GameManagerService {
     readonly board: Board;
 
     private takeLife$: Map<Tank, Subscription> = new Map<Tank, Subscription>();
-    private explodes$: Array<Subscription> = new Array<Subscription>();
+    private killTank$: Map<Bullet, Subscription> = new Map<Bullet, Subscription>();
+    private explodes$: Map<Bullet, Subscription> = new Map<Bullet, Subscription>();
 
     successGameOver$ = new Subject<boolean>();
 
@@ -58,16 +59,34 @@ export class GameManagerService {
     private subscribe() {
         this.board.getAllTanks().forEach(tank => {
             this.takeLife$.set(tank, tank.lifeTaken$.subscribe(tank => this.resolveTankSituation(tank)));
-            this.explodes$.push(tank.getBullet().explode$.subscribe(tank => this.handleExplosion(tank)));
+            this.explodes$.set(tank.getBullet(), tank.getBullet().explode$.subscribe(bullet => this.handleExplosion(bullet)));
+            this.killTank$.set(tank.getBullet(), tank.getBullet().killTank$.subscribe(tank => this.handleTankKilling(tank)));
         });
     }
 
-    private handleExplosion(tank: Tank) {
+    private handleTankKilling(tank: Tank) {
         this.spriteService.playAnimation(AnimationAsset.EXPLODE, tank.boardSprite.boardX, tank.boardSprite.boardY);
         this.spriteService.playSound(SoundAsset.EXPLODE_SOUND);
+        tank.removeFromBoard();
+        tank.takeLife();
+
         if (this.board.getOthersTanks().length <= 0) {
             this.successGameOver$.next(true);
         }
+    }
+
+    private handleExplosion(bullet: Bullet) {
+        const boardElement = this.board.getBoardElemToBoard(bullet.boardSprite.boardX, bullet.boardSprite.boardY);
+        let onComplete =  () => {};
+        if (boardElement && boardElement.isDestroyable) {
+            if (boardElement instanceof Eagle) {
+                this.successGameOver$.next(false);
+            }
+            this.spriteService.playSound(SoundAsset.HIT_SOUND);
+            onComplete = () => this.removeBoardElem(boardElement);
+        }
+        this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, bullet.boardSprite.boardX, bullet.boardSprite.boardY, onComplete);
+        bullet.explode();
     }
 
     createTank(x: number, y: number, tankType: TankType) {
@@ -95,18 +114,8 @@ export class GameManagerService {
 
         const newPoint = this.board.getPlayerTank().getBullet().retrieveNextMovement();
         this.board.getPlayerTank().getBullet().move(newPoint);
-        let barrier = newPoint ? CollisionResolverService.retrieveTargetForBullet(this.board.getPlayerTank().getBullet(), this.board) : null;
+        CollisionResolverService.retrieveTargetForBullet(this.board.getPlayerTank().getBullet(), this.board);
 
-        if (barrier) {
-            //TODO: handle with subject?
-            this.board.getPlayerTank().explodeBullet();
-            let onComplete = barrier.isDestroyable ? () => this.removeBoardElem(barrier) : () => {};
-            this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, newPoint.x, newPoint.y, onComplete);
-
-            if (barrier instanceof Eagle) {
-                this.successGameOver$.next(false);
-            }
-        }
         this.board.getOthersTanks().forEach(tank => this.moveEnemyTank(tank));
         CollisionResolverService.calculateBulletsWithTankCollisions(this.board);
         this.spriteService.rerenderScene();
@@ -125,11 +134,9 @@ export class GameManagerService {
         this.spriteService.removeSprites(boardElem.boardSprite);
     }
 
-
     createBoardElem(x: number, y: number, boardObjectName: string, wallType?: number) {
         this.board.addBoardElemToBoard(this.boardElementFactory.createBoardElem(boardObjectName, x, y, wallType), x, y);
     }
-
 
     private resolveTankSituation(tank: Tank) {
         if (tank.isDead()) {
@@ -139,15 +146,22 @@ export class GameManagerService {
             } else {
                 this.takeLife$.get(tank).unsubscribe();
                 this.takeLife$.delete(tank);
+
+                this.explodes$.get(tank.getBullet()).unsubscribe()
+                this.explodes$.delete(tank.getBullet());
+
+                this.killTank$.get(tank.getBullet()).unsubscribe()
+                this.killTank$.delete(tank.getBullet());
+
                 this.board.removeTank(tank);
-                this.spriteService.removeSprites(tank.boardSprite);
+                this.spriteService.removeSprites(tank.boardSprite, tank.getBullet().boardSprite);
             }
         } else {
             tank.removeFromBoard();
             setTimeout(() => {
                 tank.boardSprite.changeX(tank.startX);
                 tank.boardSprite.changeY(tank.startY);
-            }, 200);
+            }, 700);
         }
     }
 }
