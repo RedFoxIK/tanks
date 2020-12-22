@@ -1,5 +1,5 @@
 import {Bonus, BonusType} from "../model/bonus";
-import {Point} from "../model/boardElement";
+import {Leaf, Point} from "../model/boardElement";
 import {SpriteService} from "./sprite.service";
 import {EnumService} from "./enum.service";
 import {BoardElementsFactory} from "./boardElements.factory";

@@ -6,7 +6,7 @@ import {Direction} from "../model/direction";
 import {Game} from "../model/game";
 import {SpriteService} from "./sprite.service";
 import {BoardElementsFactory} from "./boardElements.factory";
-import {Subject} from "rxjs";
+import {Subject, Subscription} from "rxjs";
 import {BonusService} from "./bonus.service";
 import {Board} from "../model/board";
 import {CollisionResolverService} from "./collisionResolver.service";
@@ -19,15 +19,13 @@ export class GameManagerService {
     private game: Game;
     readonly board: Board;
 
-    private takeLife$ = new Subject<Tank>();
+    private takeLife$: Map<Tank, Subscription> = new Map<Tank, Subscription>();
     successGameOver$ = new Subject<boolean>();
 
     constructor(spriteService: SpriteService, game: Game) {
         this.game = game;
         this.spriteService = spriteService;
         this.boardElementFactory = new BoardElementsFactory(this.spriteService);
-        this.takeLife$.subscribe(tank => this.resolveTankSituation(tank));
-
         this.bonusService = new BonusService(this.spriteService, this.boardElementFactory);
         this.board = new Board();
     }
@@ -56,7 +54,9 @@ export class GameManagerService {
     }
 
     private subscribe() {
-        this.board.getAllTanks().forEach(tank => tank.lifeTaken$.subscribe(tank => this.resolveTankSituation(tank)));
+        this.board.getAllTanks().forEach(tank => {
+            this.takeLife$.set(tank, tank.lifeTaken$.subscribe(tank => this.resolveTankSituation(tank)));
+        });
     }
 
     createTank(x: number, y: number, tankType: TankType) {
@@ -66,7 +66,7 @@ export class GameManagerService {
 
     moveTank() {
         const newPoint = this.board.getPlayerTank().retrieveNextMovement();
-        if (newPoint && !CollisionResolverService.isCollisionDetected(this.board.getPlayerTank(), newPoint, this.board)) {
+        if (newPoint && !CollisionResolverService.isCollisionDetectedForTank(this.board.getPlayerTank(), newPoint, this.board)) {
             this.board.getPlayerTank().move(newPoint);
         }
     }
@@ -96,13 +96,14 @@ export class GameManagerService {
             }
         }
         this.board.getOthersTanks().forEach(tank => this.moveEnemyTank(tank));
+        CollisionResolverService.calculateBulletsWithTankCollisions(this.board);
         this.spriteService.rerenderScene();
     }
 
     private moveEnemyTank(tank: Tank) {
         tank.setDirection(Direction.DOWN);
         const point = tank.retrieveNextMovement();
-        if (!CollisionResolverService.isCollisionDetected(tank, point, this.board)) {
+        if (!CollisionResolverService.isCollisionDetectedForTank(tank, point, this.board)) {
             tank.move(point);
         }
     }
@@ -119,14 +120,21 @@ export class GameManagerService {
 
 
     private resolveTankSituation(tank: Tank) {
-        tank.takeLife();
         if (tank.isDead()) {
-           tank.tankType == TankType.PLAYER ? this.successGameOver$.next(false) : this.spriteService.removeSprites(tank.boardSprite);
+            if (tank.tankType == TankType.PLAYER) {
+                this.successGameOver$.next(false)
+                this.takeLife$.forEach((value) => value.unsubscribe());
+            } else {
+                this.takeLife$.get(tank).unsubscribe();
+                this.takeLife$.delete(tank);
+                this.board.removeTank(tank);
+                this.spriteService.removeSprites(tank.boardSprite);
+            }
         } else {
             tank.removeFromBoard();
             setTimeout(() => {
-                tank.boardSprite.changeX(this.board.getPlayerTank().startX);
-                tank.boardSprite.changeY(this.board.getPlayerTank().startY);
+                tank.boardSprite.changeX(tank.startX);
+                tank.boardSprite.changeY(tank.startY);
             }, 200);
         }
     }

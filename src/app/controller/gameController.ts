@@ -50,10 +50,12 @@ export class GameController {
             case GameState.LOOSE:
                 this.ticker.stop();
                 this.viewRenderService.renderUnsuccessfulResultScene();
+                this.game.changeState$.unsubscribe();
                 break;
             case GameState.WIN:
                 this.ticker.stop();
                 this.viewRenderService.renderSuccessfulResultScene();
+                this.game.changeState$.unsubscribe();
                 break;
         }
     }

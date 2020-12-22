@@ -48,7 +48,6 @@ export class ViewRenderService {
     }
 
     renderUnsuccessfulResultScene() {
-        console.log('render');
         this.spriteService.changeContainer(new PIXI.Container());
         this.spriteService.addText('LOOSE', 280, 200, 100);
         this.spriteService.playSound(SoundAsset.LOSE_SOUND);

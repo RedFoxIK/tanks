@@ -46,6 +46,11 @@ export class Board {
         this.boardElements[x][y] = null;
     }
 
+    removeTank(tank: Tank) {
+        this.allTanks = this.allTanks.filter(t => t != tank);
+        this.othersTanks = this.othersTanks.filter(t => t != tank);
+    }
+
     private boardInitialize() {
         this.boardElements = [];
         for (let i = 0; i < 32; i++) {

@@ -63,7 +63,7 @@ export class Tank extends MovableBoardElement {
     }
 
     explodeBullet(): void {
-        this.bullet.deactivate();
+        this.bullet.explode();
     }
 
     getBullet() {
@@ -117,6 +117,8 @@ export enum TankType {
 }
 
 export class Bullet extends MovableBoardElement {
+    explode$: Subject<Tank>;
+
     constructor(boardSprite: BoardSprite) {
         super(boardSprite, true, 0.15, Direction.NONE);
     }
@@ -126,7 +128,7 @@ export class Bullet extends MovableBoardElement {
         this.move(point);
     }
 
-    deactivate() {
+    explode() {
         return this.removeFromBoard();
     }
 
