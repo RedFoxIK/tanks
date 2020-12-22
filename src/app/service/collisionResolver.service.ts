@@ -85,6 +85,7 @@ export class CollisionResolverService {
                     && Math.round(tank.boardSprite.boardY) == Math.round(bullet.boardSprite.boardY)) {
                     tank.takeLife();
                     board.getPlayerTank().getBullet().explode();
+                    bullet.explode$.next(tank);
                 }
             })
         }

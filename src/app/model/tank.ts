@@ -121,6 +121,8 @@ export class Bullet extends MovableBoardElement {
 
     constructor(boardSprite: BoardSprite) {
         super(boardSprite, true, 0.15, Direction.NONE);
+
+        this.explode$ = new Subject<Tank>();
     }
 
     activate(point: Point, direction: Direction) {
@@ -128,8 +130,11 @@ export class Bullet extends MovableBoardElement {
         this.move(point);
     }
 
-    explode() {
-        return this.removeFromBoard();
+    explode(tank?: Tank) {
+        if (tank) {
+            this.explode$.next(tank);
+        }
+        this.removeFromBoard();
     }
 
     isActive() {

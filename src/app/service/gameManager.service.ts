@@ -20,6 +20,8 @@ export class GameManagerService {
     readonly board: Board;
 
     private takeLife$: Map<Tank, Subscription> = new Map<Tank, Subscription>();
+    private explodes$: Array<Subscription> = new Array<Subscription>();
+
     successGameOver$ = new Subject<boolean>();
 
     constructor(spriteService: SpriteService, game: Game) {
@@ -56,7 +58,16 @@ export class GameManagerService {
     private subscribe() {
         this.board.getAllTanks().forEach(tank => {
             this.takeLife$.set(tank, tank.lifeTaken$.subscribe(tank => this.resolveTankSituation(tank)));
+            this.explodes$.push(tank.getBullet().explode$.subscribe(tank => this.handleExplosion(tank)));
         });
+    }
+
+    private handleExplosion(tank: Tank) {
+        this.spriteService.playAnimation(AnimationAsset.EXPLODE, tank.boardSprite.boardX, tank.boardSprite.boardY);
+        this.spriteService.playSound(SoundAsset.EXPLODE_SOUND);
+        if (this.board.getOthersTanks().length <= 0) {
+            this.successGameOver$.next(true);
+        }
     }
 
     createTank(x: number, y: number, tankType: TankType) {
@@ -87,6 +98,7 @@ export class GameManagerService {
         let barrier = newPoint ? CollisionResolverService.retrieveTargetForBullet(this.board.getPlayerTank().getBullet(), this.board) : null;
 
         if (barrier) {
+            //TODO: handle with subject?
             this.board.getPlayerTank().explodeBullet();
             let onComplete = barrier.isDestroyable ? () => this.removeBoardElem(barrier) : () => {};
             this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, newPoint.x, newPoint.y, onComplete);
