@@ -1,7 +1,6 @@
 {
   "blocks": {
     "enum": "BOARD_ASSET",
-    "enumValue": "BLOCK",
     "boardElem": "BLOCK",
     "assets": [
       {
@@ -40,7 +39,6 @@
   },
   "water": {
     "enum": "BOARD_ASSET",
-    "enumValue": "WATER",
     "boardElem": "WATER",
     "assets": [
       {
@@ -111,7 +109,6 @@
   },
   "leaves": {
     "enum": "BOARD_ASSET",
-    "enumValue": "LEAVES",
     "boardElem": "LEAF",
     "assets": [
       {
@@ -206,7 +203,6 @@
   },
   "walls1": {
     "enum": "BOARD_ASSET",
-    "enumValue": "WALL_1",
     "boardElem": "WALL",
     "type": 1,
     "assets": [
@@ -232,9 +228,66 @@
       }
     ]
   },
+  "walls2": {
+    "enum": "BOARD_ASSET",
+    "boardElem": "WALL",
+    "type": 2,
+    "assets": [
+      {
+        "x": 27,
+        "y": 9
+      },
+      {
+        "x": 28,
+        "y": 9
+      },
+      {
+        "x": 27,
+        "y": 9
+      },
+      {
+        "x": 27,
+        "y": 10
+      },
+      {
+        "x": 28,
+        "y": 9
+      },
+      {
+        "x": 28,
+        "y": 10
+      },
+      {
+        "x": 29,
+        "y": 9
+      },
+      {
+        "x": 29,
+        "y": 10
+      }
+    ]
+  },
+  "walls3": {
+    "enum": "BOARD_ASSET",
+    "boardElem": "WALL",
+    "type": 3,
+    "assets": [
+      {
+        "x": 4,
+        "y": 10
+      },
+      {
+        "x": 5,
+        "y": 10
+      },
+      {
+        "x": 6,
+        "y": 10
+      }
+    ]
+  },
   "eagle": {
     "enum": "BOARD_ASSET",
-    "enumValue": "EAGLE",
     "boardElem": "EAGLE",
     "assets": [
       {

@@ -28,6 +28,7 @@ export class BoardElementsFactory {
 
     createBonusElem(bonusNumber: number, x: number, y: number, tick: number) {
         switch (bonusNumber) {
+
             case BonusType.SPEED:
                 return new Speed(this.spriteService.createBoardElem(BonusAsset, BonusAsset.SPEED, x, y), tick);
             case BonusType.SNAIL:
@@ -43,10 +44,14 @@ export class BoardElementsFactory {
         const typeBullet = tankType == TankType.PLAYER ? TankAsset.BULLET : TankAsset.ENEMY_BULLET;
         const bulletSprite = this.spriteService.createBoardElem(TankAsset, typeBullet, -1, -1, 0.5, true);
 
-        const tankAssetType = tankType == TankType.PLAYER ? TankAsset.TANK : TankAsset.ENEMY_TANK_1;
+        const tankAssetType = tankType == TankType.PLAYER ? TankAsset.TANK : this.getRandomAssetForEnemyTank();
         const boardSprite = this.spriteService.createBoardElem(TankAsset, tankAssetType, x, y, 1, true, true);
 
         return new Tank(boardSprite, tankType, bulletSprite);
+    }
+
+    getRandomAssetForEnemyTank(): string {
+        return [TankAsset.ENEMY_TANK_1, TankAsset.ENEMY_TANK_2, TankAsset.ENEMY_TANK_3][Math.floor(Math.random() * 3)];
     }
 
     private static resolveWallByType(wallType: number): string {
