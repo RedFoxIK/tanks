@@ -1,6 +1,5 @@
-import {BoardElement, BoardObject, Eagle, Water} from "../model/boardElement";
+import {BoardElement, BoardObject, Eagle} from "../model/boardElement";
 import {AnimationAsset, SoundAsset} from "../model/asset";
-import tanksResponse from "../api/tanks.json";
 import {Bullet, Tank, TankType} from "../model/tank";
 import {Direction} from "../model/direction";
 import {Game} from "../model/game";
@@ -10,11 +9,13 @@ import {Subject, Subscription} from "rxjs";
 import {BonusService} from "./bonus.service";
 import {Board} from "../model/board";
 import {CollisionResolverService} from "./collisionResolver.service";
+import {TankManagerService} from "./tankManager.service";
 
 export class GameManagerService {
     private spriteService: SpriteService;
     private boardElementFactory: BoardElementsFactory;
     private bonusService: BonusService;
+    private tankManagerService: TankManagerService;
 
     private game: Game;
     readonly board: Board;
@@ -31,6 +32,7 @@ export class GameManagerService {
         this.boardElementFactory = new BoardElementsFactory(this.spriteService);
         this.bonusService = new BonusService(this.spriteService, this.boardElementFactory);
         this.board = new Board();
+        this.tankManagerService = new TankManagerService(this.board, this.boardElementFactory, this.spriteService);
     }
 
     //TODO: create model
@@ -48,8 +50,7 @@ export class GameManagerService {
             });
         })
 
-        this.createTank(tanksResponse.player.x, tanksResponse.player.y, TankType.PLAYER);
-        tanksResponse.enemies.forEach(enemy => this.createTank(enemy.x, enemy.y, TankType.ENEMY));
+        this.tankManagerService.initializeTanks();
         this.spriteService.rerenderScene();
         this.spriteService.playSound(SoundAsset.WIN_SOUND);
 
@@ -58,9 +59,9 @@ export class GameManagerService {
 
     private subscribe() {
         this.board.getAllTanks().forEach(tank => {
-            this.takeLife$.set(tank, tank.lifeTaken$.subscribe(tank => this.resolveTankSituation(tank)));
-            this.explodes$.set(tank.getBullet(), tank.getBullet().explode$.subscribe(bullet => this.handleExplosion(bullet)));
-            this.killTank$.set(tank.getBullet(), tank.getBullet().killTank$.subscribe(tank => this.handleTankKilling(tank)));
+            this.takeLife$.set(tank, tank.lifeTaken$.subscribe(t => this.resolveTankSituation(t)));
+            this.explodes$.set(tank.getBullet(), tank.getBullet().explode$.subscribe(b => this.handleExplosion(b)));
+            this.killTank$.set(tank.getBullet(), tank.getBullet().killTank$.subscribe(t => this.handleTankKilling(t)));
         });
     }
 
@@ -87,11 +88,6 @@ export class GameManagerService {
         }
         this.spriteService.playAnimation(AnimationAsset.SMALL_EXPLODE, bullet.boardSprite.boardX, bullet.boardSprite.boardY, onComplete);
         bullet.explode();
-    }
-
-    createTank(x: number, y: number, tankType: TankType) {
-        const tank = this.boardElementFactory.createTank(x, y, tankType);
-        this.board.addTankToBoard(tank);
     }
 
     moveTank() {
@@ -144,6 +140,7 @@ export class GameManagerService {
                 this.successGameOver$.next(false)
                 this.takeLife$.forEach((value) => value.unsubscribe());
             } else {
+                this.takeLife$.forEach((value, key) => console.log(key));
                 this.takeLife$.get(tank).unsubscribe();
                 this.takeLife$.delete(tank);
 
@@ -153,8 +150,13 @@ export class GameManagerService {
                 this.killTank$.get(tank.getBullet()).unsubscribe()
                 this.killTank$.delete(tank.getBullet());
 
-                this.board.removeTank(tank);
-                this.spriteService.removeSprites(tank.boardSprite, tank.getBullet().boardSprite);
+                const newTank = this.tankManagerService.replaceTank(tank);
+                if (newTank) {
+                    this.takeLife$.set(newTank, newTank.lifeTaken$.subscribe(t => this.resolveTankSituation(t)));
+                    this.takeLife$.forEach((value, key) => console.log(key));
+                    this.explodes$.set(newTank.getBullet(), newTank.getBullet().explode$.subscribe(b => this.handleExplosion(b)));
+                    this.killTank$.set(newTank.getBullet(), newTank.getBullet().killTank$.subscribe(t => this.handleTankKilling(t)));
+                }
             }
         } else {
             tank.removeFromBoard();
