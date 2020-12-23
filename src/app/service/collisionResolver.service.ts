@@ -1,5 +1,5 @@
 import {Direction} from "../model/direction";
-import {BoardElement, Point, Water} from "../model/boardElement";
+import {Point, Water} from "../model/boardElement";
 import {Bullet, Tank} from "../model/tank";
 import {Board} from "../model/board";
 import {Bonus} from "../model/bonus";
