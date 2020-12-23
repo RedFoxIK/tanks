@@ -76,7 +76,7 @@ export class BonusService {
     }
 
     private static retrieveRandomBonus(): number {
-        const bonusTypes = EnumService.getValues(BonusType);
+        const bonusTypes = EnumService.getNumericValues(BonusType);
         return bonusTypes[BonusService.getRandomInt(bonusTypes.length)];
     }
 

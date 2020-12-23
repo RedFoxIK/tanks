@@ -31,6 +31,7 @@ export class CollisionResolverService {
             default:
                 return false;
         }
+        //TODO remove / use somewhere else
         const water = board.getBoardElemToBoard(Math.round(newPoint.x), Math.round(newPoint.y));
         if (water != null && water instanceof Water) {
             tank.takeLife()

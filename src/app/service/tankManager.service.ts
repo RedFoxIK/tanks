@@ -3,6 +3,9 @@ import {Tank, TankType} from "../model/tank";
 import {Board} from "../model/board";
 import tanksResponse from "../api/tanks.json";
 import {SpriteService} from "./sprite.service";
+import {Direction} from "../model/direction";
+import {CollisionResolverService} from "./collisionResolver.service";
+import {EnumService} from "./enum.service";
 
 export class TankManagerService {
     private totalAmount;
@@ -11,6 +14,7 @@ export class TankManagerService {
     private boardElementFactory: BoardElementsFactory;
     private spriteService: SpriteService;
     private board: Board;
+    private previousEnemiesDirections: Map<Tank, Direction> = new Map<Tank, Direction>();
 
     constructor(board: Board, boardElementFactory: BoardElementsFactory, spriteService: SpriteService) {
         this.board = board;
@@ -35,6 +39,37 @@ export class TankManagerService {
             return newTank;
         }
         return null;
+    }
+
+    moveEnemies() {
+        this.board.getOthersTanks().forEach(tank => this.moveEnemy(tank));
+    }
+
+    private moveEnemy(tank: Tank) {
+        let previousDirection = this.previousEnemiesDirections.get(tank);
+        previousDirection = previousDirection ? previousDirection : Direction.DOWN;
+        const nextDirection = this.retrieveNextDirection(tank, previousDirection);
+        tank.activateBullet();
+        tank.setDirection(nextDirection);
+        tank.move(tank.retrieveNextMovement());
+        this.previousEnemiesDirections.set(tank, nextDirection);
+    }
+
+    private retrieveNextDirection(tank: Tank, direction: Direction): Direction {
+        const oppositeDirection = direction + -1 * Math.sign(direction - 0.00001) * Math.PI;
+        let possibleDirections = EnumService.getNumericValues(Direction).filter(d => d != oppositeDirection && d != Direction.NONE);
+
+        possibleDirections = possibleDirections.filter(direction => {
+            const newPoint = tank.retrieveNextMovementWithDirection(direction)
+            return !CollisionResolverService.isCollisionDetectedForTank(tank, newPoint, this.board);
+        });
+        let arrayForRandomDirectionsChoice = [];
+        arrayForRandomDirectionsChoice.push(...possibleDirections);
+        if (possibleDirections.indexOf(direction) >= 0) {
+            arrayForRandomDirectionsChoice.push(...Array(60).fill(direction))
+        }
+        arrayForRandomDirectionsChoice.push(...possibleDirections);
+        return arrayForRandomDirectionsChoice[Math.floor(Math.random() * Math.floor(arrayForRandomDirectionsChoice.length))];
     }
 
     private createTank(x: number, y: number, tankType: TankType) {

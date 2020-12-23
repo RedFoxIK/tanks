@@ -4,9 +4,10 @@ export class EnumService {
         return Object.keys(e).filter(key => e[key] === eValue)[0];
     }
 
-    static getValues(e: any): Array<any> {
-        const values = Object.values(e);
-        return values.slice(values.length / 2);
+    static getNumericValues(e: any): Array<number> {
+        return Object.values(e)
+            .map(value => Number(value))
+            .filter(value => !isNaN(value));
     }
 
     static applyFunction(callback: Function, ...enums: any) {

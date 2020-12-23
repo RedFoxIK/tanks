@@ -70,6 +70,14 @@ export class MovableBoardElement extends BoardElement {
         }
     }
 
+    retrieveNextMovementWithDirection(direction: Direction) {
+        const currentDirection = this.direction;
+        this.direction = direction;
+        const newPoint = this.retrieveNextMovement();
+        this.direction = currentDirection;
+        return newPoint;
+    }
+
     retrieveNextMovement(): Point | null {
         let newX = this.boardSprite.boardX;
         let newY = this.boardSprite.boardY;
