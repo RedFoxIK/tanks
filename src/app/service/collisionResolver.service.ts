@@ -1,10 +1,18 @@
 import {Direction} from "../model/direction";
 import {Point, Water} from "../model/boardElement";
-import {Bullet, Tank} from "../model/tank";
+import {Bullet, Tank, TankType} from "../model/tank";
 import {Board} from "../model/board";
 import {Bonus} from "../model/bonus";
 
 export class CollisionResolverService {
+
+    static isCollisionDetectedForTankForDirection(tank: Tank, newPoint: Point, board: Board, direction: Direction): boolean {
+        const currentDirection = tank.getDirection();
+        tank.setDirection(direction);
+        const rez = this.isCollisionDetectedForTank(tank, newPoint, board);
+        tank.setDirection(currentDirection);
+        return rez;
+    }
 
     static isCollisionDetectedForTank(tank: Tank, newPoint: Point, board: Board): boolean {
         if (!tank.isElemOnBoard()) {
@@ -31,14 +39,19 @@ export class CollisionResolverService {
             default:
                 return false;
         }
-        //TODO remove / use somewhere else
-        const water = board.getBoardElemToBoard(Math.round(newPoint.x), Math.round(newPoint.y));
-        if (water != null && water instanceof Water) {
-            tank.takeLife()
-            return true;
-        }
+        // TODO: next ifs divide on separate methods
         if (leftCeil != null && leftCeil.isBarrier || rightCeil != null && rightCeil.isBarrier) {
             return true;
+        }
+        if (tank.tankType == TankType.ENEMY && (leftCeil instanceof Water || rightCeil instanceof Water)) {
+            return true;
+        }
+        if (tank.tankType == TankType.PLAYER) {
+            const water = board.getBoardElemToBoard(Math.round(newPoint.x), Math.round(newPoint.y));
+            if (water != null && water instanceof Water) {
+                tank.takeLife()
+                return true;
+            }
         }
         return board.getAllTanks()
             .filter(t => tank !== t)

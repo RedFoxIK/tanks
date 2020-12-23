@@ -4,7 +4,7 @@ import {Direction} from "./direction";
 import {Subject} from "rxjs";
 
 export class Tank extends MovableBoardElement {
-    static INITIAL_SPEED = 0.025;
+    static INITIAL_SPEED = 0.03;
 
     readonly startX: number;
     readonly startY: number;
