@@ -1,5 +1,5 @@
 import {Bonus, BonusType} from "../model/bonus";
-import {Leaf, Point} from "../model/boardElement";
+import {Point} from "../model/boardElement";
 import {SpriteService} from "./sprite.service";
 import {EnumService} from "./enum.service";
 import {BoardElementsFactory} from "./boardElements.factory";
@@ -8,7 +8,7 @@ import {Board} from "../model/board";
 import {CollisionResolverService} from "./collisionResolver.service";
 
 export class BonusService {
-    readonly startWithBonuses = 500;
+    readonly startWithBonuses = 300;
     readonly maxBonusesOnBoard = 2;
 
     private bonuses: Array<Bonus> = [];
@@ -17,7 +17,7 @@ export class BonusService {
     private spriteService: SpriteService;
     private boardElementsFactory: BoardElementsFactory;
 
-    tick = 0;
+    private tick = 0;
 
     constructor(spriteService: SpriteService, boardElementsFactory: BoardElementsFactory) {
         this.spriteService = spriteService;

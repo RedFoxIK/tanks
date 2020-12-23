@@ -1,7 +1,6 @@
-import {BoardElement, BoardObject, Eagle} from "../model/boardElement";
+import {BoardElement, BoardObject, Eagle, Wall} from "../model/boardElement";
 import {AnimationAsset, SoundAsset} from "../model/asset";
 import {Bullet, Tank, TankType} from "../model/tank";
-import {Direction} from "../model/direction";
 import {Game} from "../model/game";
 import {SpriteService} from "./sprite.service";
 import {BoardElementsFactory} from "./boardElements.factory";
@@ -10,12 +9,14 @@ import {BonusService} from "./bonus.service";
 import {Board} from "../model/board";
 import {CollisionResolverService} from "./collisionResolver.service";
 import {TankManagerService} from "./tankManager.service";
+import {StatisticService} from "./statistics.service";
 
 export class GameManagerService {
     private spriteService: SpriteService;
     private boardElementFactory: BoardElementsFactory;
     private bonusService: BonusService;
     private tankManagerService: TankManagerService;
+    private statisticsService: StatisticService;
 
     private game: Game;
     readonly board: Board;
@@ -33,6 +34,7 @@ export class GameManagerService {
         this.bonusService = new BonusService(this.spriteService, this.boardElementFactory);
         this.board = new Board();
         this.tankManagerService = new TankManagerService(this.board, this.boardElementFactory, this.spriteService);
+        this.statisticsService = new StatisticService(this.spriteService);
     }
 
     //TODO: create model
@@ -55,6 +57,7 @@ export class GameManagerService {
         this.spriteService.playSound(SoundAsset.WIN_SOUND);
 
         this.subscribe();
+        this.statisticsService.initializeStatisticsBoard();
     }
 
     private subscribe() {
@@ -78,10 +81,13 @@ export class GameManagerService {
 
     private handleExplosion(bullet: Bullet) {
         const boardElement = this.board.getBoardElemToBoard(bullet.boardSprite.boardX, bullet.boardSprite.boardY);
-        let onComplete =  () => {};
+        let onComplete = () => {};
         if (boardElement && boardElement.isDestroyable) {
             if (boardElement instanceof Eagle) {
                 this.successGameOver$.next(false);
+            }
+            if (bullet == this.board.getPlayerTank().getBullet() && boardElement instanceof Wall) {
+                this.statisticsService.addWallToStatistics();
             }
             this.spriteService.playSound(SoundAsset.HIT_SOUND);
             onComplete = () => this.removeBoardElem(boardElement);
@@ -152,6 +158,8 @@ export class GameManagerService {
                 this.killTank$.get(tank.getBullet()).unsubscribe()
                 this.killTank$.delete(tank.getBullet());
 
+                this.statisticsService.addTankToStatistics();
+
                 const newTank = this.tankManagerService.replaceTank(tank);
                 if (newTank) {
                     this.takeLife$.set(newTank, newTank.lifeTaken$.subscribe(t => this.resolveTankSituation(t)));
@@ -167,5 +175,9 @@ export class GameManagerService {
                 tank.boardSprite.changeY(tank.startY);
             }, 700);
         }
+    }
+
+    getScores(): number {
+        return this.statisticsService.retrieveTotalScores();
     }
 }
