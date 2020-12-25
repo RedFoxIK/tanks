@@ -1,10 +1,10 @@
-import {Tank} from "./tank";
 import {BoardElement} from "./boardElement";
 import {BoardSprite} from "./spriteWrapper";
+import {Tank} from "./tank";
 
 export abstract class Bonus extends BoardElement {
-    firstTick: number;
-    lifeTick: number;
+    public firstTick: number;
+    public lifeTick: number;
 
     protected tank: Tank;
 
@@ -18,18 +18,18 @@ export abstract class Bonus extends BoardElement {
         this.boardSprite.sprite.zIndex = 100;
     }
 
-    abstract apply(tank: Tank): void;
-    abstract finishEffect(): void;
+    public abstract apply(tank: Tank): void;
+    public abstract finishEffect(): void;
 
-    isActive(tick: number) {
+    public isActive(tick: number) {
         return tick < this.firstTick + this.lifeTick;
     }
 
-    isAlmostGone(tick: number): boolean {
+    public isAlmostGone(tick: number): boolean {
         return this.isActive(tick) && tick > this.firstTick + this.lifeTick - this.lastTicks;
     }
 
-    isFinished() {
+    public isFinished() {
         this.appliedTicks--;
         if (this.appliedTicks <= 0) {
             this.finishEffect();
@@ -45,13 +45,13 @@ export class Shield extends Bonus {
         super(boardSprite, firstTick, 700);
     }
 
-    apply(tank: Tank): void {
+    public apply(tank: Tank): void {
         this.tank = tank;
         tank.makeImmortal();
         this.tank.boardSprite.sprite.alpha = 0.5;
     }
 
-    finishEffect(): void {
+    public finishEffect(): void {
         this.tank.takeAwayImmortal();
         this.tank.boardSprite.sprite.alpha = 1;
     }
@@ -63,11 +63,11 @@ export class Life extends Bonus {
         super(boardSprite, firstTick, 700);
     }
 
-    apply(tank: Tank): void {
+    public apply(tank: Tank): void {
         tank.addLife();
     }
 
-    finishEffect(): void {}
+    public finishEffect(): void {}
 }
 
 export class Snail extends Bonus {
@@ -76,12 +76,12 @@ export class Snail extends Bonus {
         super(boardSprite, firstTick, 600);
     }
 
-    apply(tank: Tank): void {
+    public apply(tank: Tank): void {
         this.tank = tank;
         tank.decreaseSpeed(0.025);
     }
 
-    finishEffect(): void {
+    public finishEffect(): void {
         this.tank.setInitialSpeed();
     }
 }
@@ -92,12 +92,12 @@ export class Speed extends Bonus {
         super(boardSprite, firstTick, 700);
     }
 
-    apply(tank: Tank): void {
+    public apply(tank: Tank): void {
         this.tank = tank;
         tank.increaseSpeed(0.05);
     }
 
-    finishEffect(): void {
+    public finishEffect(): void {
         this.tank.setInitialSpeed();
     }
 }
@@ -106,5 +106,5 @@ export enum BonusType {
     SHIELD,
     LIFE,
     SNAIL,
-    SPEED
+    SPEED,
 }

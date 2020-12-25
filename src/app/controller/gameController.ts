@@ -1,16 +1,16 @@
-import {Game, GameState} from "../model/game";
-import * as PIXI from 'pixi.js';
-import {Ticker} from 'pixi.js';
-import {Direction} from "../model/direction";
-import {GameManagerService} from "../service/gameManager.service";
-import {ViewRenderService} from "../service/viewRender.service";
+import * as PIXI from "pixi.js";
+import {Ticker} from "pixi.js";
 import boardMapResponse from "../api/board-map.json";
+import {Direction} from "../model/direction";
+import {Game, GameState} from "../model/game";
+import {GameManagerService} from "../service/gameManager.service";
 import {SpriteService} from "../service/sprite.service";
+import {ViewRenderService} from "../service/viewRender.service";
 
 export class GameController {
     private static movements = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyD", "KeyS", "KeyA"];
 
-    readonly game: Game;
+    public readonly game: Game;
     private gameManagerService: GameManagerService;
     private viewRenderService: ViewRenderService;
     private ticker: Ticker;
@@ -21,16 +21,17 @@ export class GameController {
         this.ticker.autoStart = false;
 
         this.game = new Game();
-        const spriteService = new SpriteService(app, view)
+        const spriteService = new SpriteService(app, view);
         this.gameManagerService = new GameManagerService(spriteService, this.game);
         this.viewRenderService = new ViewRenderService(spriteService, this.gameManagerService);
-        this.game.changeState$.subscribe(state => this.resolveState(state))
-        this.gameManagerService.successGameOver$.subscribe(result => result ? this.game.changeState(GameState.WIN) :  this.game.changeState(GameState.LOOSE));
+        this.game.changeState$.subscribe((state) => this.resolveState(state));
+        this.gameManagerService.successGameOver$.subscribe((result) => result ? this.game.changeState(GameState.WIN)
+            :  this.game.changeState(GameState.LOOSE));
         this.game.init();
     }
 
     private resolveState(state: GameState) {
-        //TODO clear scene between statuses?
+        // TODO: clear scene between statuses?
         switch (state) {
             case GameState.CREATED:
                 this.game.changeState(GameState.PRELOADED);
@@ -41,7 +42,7 @@ export class GameController {
             case GameState.IN_PROGRESS:
                 this.viewRenderService.renderGameScene(boardMapResponse);
 
-                //TODO another controller
+                // TODO: another controller
                 setTimeout(() => {
                     this.addEventListeners();
                     this.animateScene();
@@ -60,17 +61,17 @@ export class GameController {
         }
     }
 
-    //ONE more controller;
+    // TODO: ONE more controller;
     private addEventListeners() {
-        window.addEventListener('keydown', (e) => this.keyDown(e))
-        window.addEventListener('keyup', (e) => this.keyUp(e))
+        window.addEventListener("keydown", (e) => this.keyDown(e));
+        window.addEventListener("keyup", (e) => this.keyUp(e));
     }
 
     private keyDown(e) {
         switch (e.code) {
             case "ArrowUp":
             case "KeyW":
-                this.gameManagerService.board.getPlayerTank().setDirection(Direction.UP)
+                this.gameManagerService.board.getPlayerTank().setDirection(Direction.UP);
                 break;
             case "ArrowDown":
             case "KeyS":

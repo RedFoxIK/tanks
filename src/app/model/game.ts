@@ -1,19 +1,19 @@
 import {Subject} from "rxjs";
 
 export class Game {
+    public changeState$: Subject<GameState>;
     private state: GameState;
-    changeState$: Subject<GameState>;
 
     constructor() {
         this.changeState$ = new Subject<GameState>();
-        this.changeState(GameState.CREATED)
-    }
-
-    init() {
         this.changeState(GameState.CREATED);
     }
 
-    changeState(state: GameState) {
+    public init() {
+        this.changeState(GameState.CREATED);
+    }
+
+    public changeState(state: GameState) {
         this.state = state;
         this.changeState$.next(this.state);
     }
@@ -24,5 +24,5 @@ export enum GameState {
     PRELOADED,
     IN_PROGRESS,
     LOOSE,
-    WIN
+    WIN,
 }

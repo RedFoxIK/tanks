@@ -1,25 +1,21 @@
+import {EnumService} from "../service/enum.service";
 import {Direction} from "./direction";
 import {BoardSprite} from "./spriteWrapper";
-import {EnumService} from "../service/enum.service";
 
 export abstract class BoardElement {
-    boardSprite: BoardSprite;
-    readonly isDestroyable: boolean;
-    readonly isBarrier: boolean;
-    readonly isSkippedByBullet: boolean;
+    public boardSprite: BoardSprite;
+    public readonly isDestroyable: boolean;
+    public readonly isBarrier: boolean;
+    public readonly isSkippedByBullet: boolean;
     private destroyed: boolean;
 
-    protected constructor(boardSprite: BoardSprite, isDestroyable: boolean, isBarrier: boolean, isSkippedByBullet: boolean) {
+    protected constructor(boardSprite: BoardSprite, isDestroyable: boolean, isBarrier: boolean,
+                          isSkippedByBullet: boolean) {
         this.boardSprite = boardSprite;
         this.isDestroyable = isDestroyable;
         this.isBarrier = isBarrier;
         this.isSkippedByBullet = isSkippedByBullet;
         this.destroyed = true;
-    }
-
-    protected resetPosition(x: number, y: number): void {
-        this.boardSprite.sprite.x = x;
-        this.boardSprite.sprite.y = y;
     }
 
     public destroy(): void {
@@ -28,16 +24,21 @@ export abstract class BoardElement {
         }
     }
 
-    isDestroyed(): boolean {
+    public isDestroyed(): boolean {
         return this.destroyed;
     }
 
-    getX(): number {
+    public getX(): number {
         return this.boardSprite.boardX;
     }
 
-    getY(): number {
+    public getY(): number {
         return this.boardSprite.boardY;
+    }
+
+    protected resetPosition(x: number, y: number): void {
+        this.boardSprite.sprite.x = x;
+        this.boardSprite.sprite.y = y;
     }
 }
 
@@ -51,26 +52,26 @@ export class MovableBoardElement extends BoardElement {
         this.direction = direction;
     }
 
-    setDirection(direction: Direction) {
+    public setDirection(direction: Direction) {
         this.direction = direction;
     }
 
-    getDirection(): Direction {
+    public getDirection(): Direction {
         return this.direction;
     }
 
-    move(newPoint: Point) {
+    public move(newPoint: Point) {
         if (newPoint != null) {
             this.boardSprite.changeX(newPoint.x);
             this.boardSprite.changeY(newPoint.y);
 
-            if (this.direction != Direction.NONE) {
+            if (this.direction !== Direction.NONE) {
                 this.boardSprite.sprite.rotation = this.direction;
             }
         }
     }
 
-    retrieveNextMovementWithDirection(direction: Direction) {
+    public retrieveNextMovementWithDirection(direction: Direction) {
         const currentDirection = this.direction;
         this.direction = direction;
         const newPoint = this.retrieveNextMovement();
@@ -78,7 +79,7 @@ export class MovableBoardElement extends BoardElement {
         return newPoint;
     }
 
-    retrieveNextMovement(): Point | null {
+    public retrieveNextMovement(): Point | null {
         let newX = this.boardSprite.boardX;
         let newY = this.boardSprite.boardY;
 
@@ -101,12 +102,12 @@ export class MovableBoardElement extends BoardElement {
         return new Point(newX, newY);
     }
 
-    isElemOnBoard() {
+    public isElemOnBoard() {
         return this.boardSprite.boardX >= 0 && this.boardSprite.boardY >= 0 &&
             this.boardSprite.boardX < 32 && this.boardSprite.boardY < 32;
     }
 
-    removeFromBoard() {
+    public removeFromBoard() {
         this.move(new Point(-1, -1));
     }
 
@@ -147,7 +148,7 @@ export class Leaf extends BoardElement {
     }
 }
 
-//TODO: remove string?
+// TODO: remove string?
 export enum BoardObject {
     BLOCK = "BLOCK",
     WATER = "WATER",
@@ -155,12 +156,12 @@ export enum BoardObject {
     WALL = "WALL",
     EAGLE = "EAGLE",
     TANK = "TANK",
-    ENEMY_TANK = "ENEMY_TANK"
+    ENEMY_TANK = "ENEMY_TANK",
 }
 
 export class Point {
-    x: number;
-    y: number;
+    public x: number;
+    public y: number;
 
     constructor(x: number, y: number) {
         this.x = x;

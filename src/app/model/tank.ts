@@ -1,21 +1,21 @@
-import {MovableBoardElement, Point} from "./boardElement";
-import {BoardSprite} from "./spriteWrapper";
-import {Direction} from "./direction";
 import {Subject} from "rxjs";
+import {MovableBoardElement, Point} from "./boardElement";
+import {Direction} from "./direction";
+import {BoardSprite} from "./spriteWrapper";
 
 export class Tank extends MovableBoardElement {
-    static INITIAL_SPEED = 0.03;
+    public static INITIAL_SPEED = 0.03;
 
-    readonly startX: number;
-    readonly startY: number;
+    public readonly startX: number;
+    public readonly startY: number;
+
+    public readonly tankType: TankType;
+    public readonly bullet: Bullet;
+
+    public lifeTaken$: Subject<Tank>;
 
     private lifeAmount: number;
     private isImmortal: boolean;
-
-    readonly tankType: TankType;
-    readonly bullet: Bullet;
-
-    lifeTaken$: Subject<Tank>;
 
     constructor(boardSprite: BoardSprite, tankType: TankType, bulletSprite: BoardSprite) {
         const direction = Direction.NONE;
@@ -25,7 +25,7 @@ export class Tank extends MovableBoardElement {
         this.startY = boardSprite.boardY;
 
         this.tankType = tankType;
-        this.bullet = new Bullet(bulletSprite)
+        this.bullet = new Bullet(bulletSprite);
 
         this.lifeAmount = 1;
         this.isImmortal = false;
@@ -36,21 +36,21 @@ export class Tank extends MovableBoardElement {
         this.lifeTaken$ = new Subject<Tank>();
     }
 
-    setInitialSpeed() {
+    public setInitialSpeed() {
         this.speed = Tank.INITIAL_SPEED;
     }
 
-    activateBullet(): boolean {
+    public activateBullet(): boolean {
         if (!this.bullet.isActive()) {
             const bulletDirection = this.getDirection() !== Direction.NONE ? this.getDirection() :
                 this.resolveDirectionByRotation(this.boardSprite.sprite.rotation);
             this.bullet.activate(new Point(this.boardSprite.boardX, this.boardSprite.boardY), bulletDirection);
-            return true
+            return true;
         }
         return false;
     }
 
-    moveBullet(): Point {
+    public moveBullet(): Point {
         if (this.bullet.isActive()) {
             const newPoint = this.bullet.retrieveNextMovement();
             this.bullet.move(newPoint);
@@ -58,59 +58,59 @@ export class Tank extends MovableBoardElement {
         return null;
     }
 
-    getBullet() {
+    public getBullet() {
         return this.bullet;
     }
 
-    addLife(): void {
+    public addLife(): void {
         this.lifeAmount += 1;
     }
 
-    takeLife(): void {
+    public takeLife(): void {
         this.lifeAmount -= 1;
         this.lifeTaken$.next(this);
     }
 
-    takeWound(shooter: Tank): void {
-        if (!this.isImmortal && this.tankType != shooter.tankType) {
+    public takeWound(shooter: Tank): void {
+        if (!this.isImmortal && this.tankType !== shooter.tankType) {
             this.takeLife();
         }
     }
 
-    isDead(): boolean {
+    public isDead(): boolean {
         return this.lifeAmount <= 0;
     }
 
-    increaseSpeed(speed: number): void {
+    public increaseSpeed(speed: number): void {
         this.speed += speed;
         if (this.speed > 0.1) {
             this.speed = 0.1;
         }
     }
 
-    decreaseSpeed(speed: number): void {
+    public decreaseSpeed(speed: number): void {
         this.speed -= speed;
         if (this.speed < 0.025) {
             this.speed = 0.025;
         }
     }
 
-    makeImmortal() {
+    public makeImmortal() {
         this.isImmortal = true;
     }
 
-    takeAwayImmortal() {
+    public takeAwayImmortal() {
         this.isImmortal = false;
     }
 }
 
 export enum TankType {
-    PLAYER, ENEMY
+    PLAYER, ENEMY,
 }
 
 export class Bullet extends MovableBoardElement {
-    killTank$: Subject<Tank>;
-    explode$: Subject<Bullet>;
+    public killTank$: Subject<Tank>;
+    public explode$: Subject<Bullet>;
 
     constructor(boardSprite: BoardSprite) {
         super(boardSprite, true, 0.15, Direction.NONE);
@@ -119,20 +119,20 @@ export class Bullet extends MovableBoardElement {
         this.explode$ = new Subject<Bullet>();
     }
 
-    activate(point: Point, direction: Direction) {
+    public activate(point: Point, direction: Direction) {
         this.setDirection(direction);
         this.move(point);
     }
 
-    explode() {
+    public explode() {
         this.removeFromBoard();
     }
 
-    isActive() {
+    public isActive() {
         return this.isElemOnBoard();
     }
 
-    retrieveNextMovement(): Point | null {
+    public retrieveNextMovement(): Point | null {
         if (this.isActive()) {
             return super.retrieveNextMovement();
         }

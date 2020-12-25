@@ -1,12 +1,13 @@
-import {Direction} from "../model/direction";
-import {Point, Water} from "../model/boardElement";
-import {Bullet, Tank, TankType} from "../model/tank";
 import {Board} from "../model/board";
+import {Point, Water} from "../model/boardElement";
 import {Bonus} from "../model/bonus";
+import {Direction} from "../model/direction";
+import {Bullet, Tank, TankType} from "../model/tank";
 
 export class CollisionResolverService {
 
-    static isCollisionDetectedForTankForDirection(tank: Tank, newPoint: Point, board: Board, direction: Direction): boolean {
+    public static isCollisionDetectedForTankForDirection(tank: Tank, newPoint: Point, board: Board,
+                                                         direction: Direction): boolean {
         const currentDirection = tank.getDirection();
         tank.setDirection(direction);
         const rez = this.isCollisionDetectedForTank(tank, newPoint, board);
@@ -14,7 +15,7 @@ export class CollisionResolverService {
         return rez;
     }
 
-    static isCollisionDetectedForTank(tank: Tank, newPoint: Point, board: Board): boolean {
+    public static isCollisionDetectedForTank(tank: Tank, newPoint: Point, board: Board): boolean {
         if (!tank.isElemOnBoard()) {
             return false;
         }
@@ -43,22 +44,22 @@ export class CollisionResolverService {
         if (leftCeil != null && leftCeil.isBarrier || rightCeil != null && rightCeil.isBarrier) {
             return true;
         }
-        if (tank.tankType == TankType.ENEMY && (leftCeil instanceof Water || rightCeil instanceof Water)) {
+        if (tank.tankType === TankType.ENEMY && (leftCeil instanceof Water || rightCeil instanceof Water)) {
             return true;
         }
-        if (tank.tankType == TankType.PLAYER) {
+        if (tank.tankType === TankType.PLAYER) {
             const water = board.getBoardElemToBoard(Math.round(newPoint.x), Math.round(newPoint.y));
             if (water != null && water instanceof Water) {
-                tank.takeLife()
+                tank.takeLife();
                 return true;
             }
         }
         return board.getAllTanks()
-            .filter(t => tank !== t)
-            .filter(t => this.tanksCollisionDetected(t, tank)).length > 0;
+            .filter((t) => tank !== t)
+            .filter((t) => this.tanksCollisionDetected(t, tank)).length > 0;
     }
 
-    static retrieveTargetForBullet(bullet: Bullet,  board: Board): void {
+    public static retrieveTargetForBullet(bullet: Bullet,  board: Board): void {
         if (!bullet.isElemOnBoard() || !bullet.isActive()) {
             return null;
         }
@@ -87,54 +88,56 @@ export class CollisionResolverService {
             bullet.explode$.next(bullet);
         }
         if (nextCeil != null && !nextCeil.isDestroyable && !nextCeil.isSkippedByBullet) {
-            bullet.explode$.next(bullet)
+            bullet.explode$.next(bullet);
         }
     }
 
-    static calculateBulletsWithTankCollisions(board: Board) {
+    public static calculateBulletsWithTankCollisions(board: Board) {
         const playerBullet = board.getPlayerTank().getBullet();
-        const bullets = board.getOthersTanks().map(tank => tank.getBullet()).filter(b => b.isActive());
+        const bullets = board.getOthersTanks().map((tank) => tank.getBullet()).filter((b) => b.isActive());
 
         if (playerBullet.isActive()) {
-            //TODO filter and first tank
-            board.getOthersTanks().forEach(tank => {
-                //TODO function
-                if (Math.round(tank.boardSprite.boardX) == Math.round(playerBullet.boardSprite.boardX)
-                    && Math.round(tank.boardSprite.boardY) == Math.round(playerBullet.boardSprite.boardY)) {
+            // TODO: filter and first tank
+            board.getOthersTanks().forEach((tank) => {
+                // TODO: function
+                if (Math.round(tank.boardSprite.boardX) === Math.round(playerBullet.boardSprite.boardX)
+                    && Math.round(tank.boardSprite.boardY) === Math.round(playerBullet.boardSprite.boardY)) {
                     board.getPlayerTank().getBullet().explode();
                     playerBullet.killTank$.next(tank);
                 }
-            })
+            });
         }
 
-        bullets.forEach(b => {
-            if (Math.round(playerBullet.boardSprite.boardX) == Math.round(b.boardSprite.boardX)
-                && Math.round(playerBullet.boardSprite.boardY) == Math.round(b.boardSprite.boardY)) {
+        bullets.forEach((b) => {
+            if (Math.round(playerBullet.boardSprite.boardX) === Math.round(b.boardSprite.boardX)
+                && Math.round(playerBullet.boardSprite.boardY) === Math.round(b.boardSprite.boardY)) {
                 playerBullet.explode$.next(playerBullet);
                 b.explode$.next(b);
             }
-            if (Math.round(board.getPlayerTank().boardSprite.boardX) == Math.round(b.boardSprite.boardX)
-                && Math.round(board.getPlayerTank().boardSprite.boardY) == Math.round(b.boardSprite.boardY)) {
+            if (Math.round(board.getPlayerTank().boardSprite.boardX) === Math.round(b.boardSprite.boardX)
+                && Math.round(board.getPlayerTank().boardSprite.boardY) === Math.round(b.boardSprite.boardY)) {
                 board.getPlayerTank().getBullet().explode();
                 b.killTank$.next(board.getPlayerTank());
             }
-        })
+        });
     }
 
-    static tanksCollisionDetected(tank1: Tank, tank2: Tank): boolean {
+    public static tanksCollisionDetected(tank1: Tank, tank2: Tank): boolean {
         let tank1NextMovement = tank1.retrieveNextMovement();
         let tank2NextMovement = tank2.retrieveNextMovement();
 
-        tank1NextMovement = tank1NextMovement ? tank1NextMovement : new Point(tank1.boardSprite.boardX, tank1.boardSprite.boardY);
-        tank2NextMovement = tank2NextMovement ? tank2NextMovement : new Point(tank2.boardSprite.boardX, tank2.boardSprite.boardY);
+        tank1NextMovement = tank1NextMovement ? tank1NextMovement :
+            new Point(tank1.boardSprite.boardX, tank1.boardSprite.boardY);
+        tank2NextMovement = tank2NextMovement ? tank2NextMovement :
+            new Point(tank2.boardSprite.boardX, tank2.boardSprite.boardY);
 
-        return Math.round(tank1NextMovement.x) == Math.round(tank2NextMovement.x) &&
-            Math.round(tank1NextMovement.y) == Math.ceil(tank2NextMovement.y);
+        return Math.round(tank1NextMovement.x) === Math.round(tank2NextMovement.x) &&
+            Math.round(tank1NextMovement.y) === Math.ceil(tank2NextMovement.y);
     }
 
-    static isBonusTakenByTank(bonus: Bonus, tank: Tank) {
-        return Math.round(tank.boardSprite.boardX) == bonus.boardSprite.boardX &&
-            Math.round(tank.boardSprite.boardY) == bonus.boardSprite.boardY;
+    public static isBonusTakenByTank(bonus: Bonus, tank: Tank) {
+        return Math.round(tank.boardSprite.boardX) === bonus.boardSprite.boardX &&
+            Math.round(tank.boardSprite.boardY) === bonus.boardSprite.boardY;
     }
 
     private static floor(coordinate: number): number {

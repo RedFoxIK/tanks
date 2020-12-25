@@ -1,9 +1,9 @@
 import {Sprite} from "pixi.js";
-import {v4 as uuid} from 'uuid';
+import {v4 as uuid} from "uuid";
 
 export class SpriteWrapper {
-    readonly id: string;
-    readonly sprite: Sprite;
+    public readonly id: string;
+    public readonly sprite: Sprite;
 
     constructor(sprite: Sprite, x: number, y: number, width?: number, height?: number) {
         this.id = uuid();
@@ -17,18 +17,28 @@ export class SpriteWrapper {
         }
     }
 
-
-    changeWidth(width: number) {
+    public changeWidth(width: number) {
         this.sprite.width = width;
     }
 }
 
 export class BoardSprite extends SpriteWrapper {
-    static size = 24;
-    boardX: number;
-    boardY: number;
-    rotatable: boolean
-    scale: number;
+    public static size = 24;
+
+    public static getSpriteCoordinate(coordinate: number, rotatable?: boolean): number {
+        const corrector = rotatable ? BoardSprite.size / 2 : 0;
+        const shift = 0;
+        return coordinate * BoardSprite.size + corrector + shift;
+    }
+
+    public static getBoardCoordinate(coordinate: number, rotatable?: boolean): number {
+        const corrector = rotatable ? BoardSprite.size / 2 : 0;
+        return (coordinate - corrector) / BoardSprite.size;
+    }
+    public boardX: number;
+    public boardY: number;
+    public rotatable: boolean;
+    public scale: number;
 
     constructor(sprite: Sprite, x: number, y: number, rotatable?: boolean, scale: number = 1) {
         const stageX = BoardSprite.getSpriteCoordinate(x, rotatable);
@@ -47,25 +57,13 @@ export class BoardSprite extends SpriteWrapper {
         }
     }
 
-    changeX(boardX: number): void {
+    public changeX(boardX: number): void {
         this.boardX = boardX;
         this.sprite.x = BoardSprite.getSpriteCoordinate(this.boardX, this.rotatable);
     }
 
-    changeY(boardY: number): void {
+    public changeY(boardY: number): void {
         this.boardY = boardY;
         this.sprite.y = BoardSprite.getSpriteCoordinate(this.boardY, this.rotatable);
     }
-
-    static getSpriteCoordinate(coordinate: number, rotatable?: boolean): number {
-        const corrector = rotatable ? BoardSprite.size / 2 : 0;
-        const shift = 0;
-        return coordinate * BoardSprite.size + corrector + shift;
-    }
-
-    static getBoardCoordinate(coordinate: number, rotatable?: boolean): number {
-        const corrector = rotatable ? BoardSprite.size / 2 : 0;
-        return (coordinate - corrector) / BoardSprite.size;
-    }
 }
-

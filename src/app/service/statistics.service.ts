@@ -1,12 +1,12 @@
-import {SpriteService} from "./sprite.service";
 import {BoardAsset, TankAsset} from "../model/asset";
 import {SpriteWrapper} from "../model/spriteWrapper";
+import {SpriteService} from "./sprite.service";
 
 export class StatisticService {
-    private spriteService: SpriteService;
 
-    readonly TANK_COST = 100;
-    readonly WALL_COST = 10;
+    public readonly TANK_COST = 100;
+    public readonly WALL_COST = 10;
+    private spriteService: SpriteService;
 
     private scores = 0;
 
@@ -20,30 +20,30 @@ export class StatisticService {
         this.spriteService = spriteService;
     }
 
-    initializeStatisticsBoard() {
+    public initializeStatisticsBoard() {
         this.spriteService.addSprite(TankAsset, TankAsset.ENEMY_TANK_1, 800, 110, 36, 36);
-        this.spriteService.addText('X', 870, 100, 48);
-        this.killedTankAmountSprite = this.spriteService.addText('0', 940, 100, 48);
+        this.spriteService.addText("X", 870, 100, 48);
+        this.killedTankAmountSprite = this.spriteService.addText("0", 940, 100, 48);
 
         this.spriteService.addSprite(BoardAsset, BoardAsset.WALL_1, 800, 310, 36, 36);
-        this.spriteService.addText('X', 870, 300, 48);
-        this.removedWallAmountSprite = this.spriteService.addText('0', 940, 300, 48);
+        this.spriteService.addText("X", 870, 300, 48);
+        this.removedWallAmountSprite = this.spriteService.addText("0", 940, 300, 48);
 
     }
 
-    addTankToStatistics() {
+    public addTankToStatistics() {
         this.killedTanks++;
         (this.killedTankAmountSprite.sprite as PIXI.Text).text = this.killedTanks.toString();
         this.scores += this.TANK_COST;
     }
 
-    addWallToStatistics() {
+    public addWallToStatistics() {
         this.destroyedWalls++;
         (this.removedWallAmountSprite.sprite as PIXI.Text).text = this.destroyedWalls.toString();
         this.scores += this.WALL_COST;
     }
 
-    retrieveTotalScores(): number {
+    public retrieveTotalScores(): number {
         return this.scores;
     }
 }

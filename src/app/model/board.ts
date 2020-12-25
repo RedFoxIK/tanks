@@ -2,7 +2,7 @@ import {BoardElement} from "./boardElement";
 import {Tank, TankType} from "./tank";
 
 export class Board {
-    static BOARD_SIZE = 32;
+    public static BOARD_SIZE = 32;
 
     private boardElements: BoardElement | null [][];
     private playerTank: Tank;
@@ -13,8 +13,8 @@ export class Board {
         this.boardInitialize();
     }
 
-    addTankToBoard(tank: Tank) {
-        if (tank.tankType == TankType.PLAYER) {
+    public addTankToBoard(tank: Tank) {
+        if (tank.tankType === TankType.PLAYER) {
             this.playerTank = tank;
         } else {
             this.othersTanks.push(tank);
@@ -22,33 +22,33 @@ export class Board {
         this.allTanks.push(tank);
     }
 
-    addBoardElemToBoard(elem: BoardElement, x: number, y: number) {
+    public addBoardElemToBoard(elem: BoardElement, x: number, y: number) {
         this.boardElements[x][y] = elem;
     }
 
-    getBoardElemToBoard(x: number, y: number): BoardElement | null {
+    public getBoardElemToBoard(x: number, y: number): BoardElement | null {
         return this.boardElements[Math.round(x)][Math.round(y)];
     }
 
-    getPlayerTank(): Tank {
+    public getPlayerTank(): Tank {
         return this.playerTank;
     }
 
-    getOthersTanks(): Tank[] {
+    public getOthersTanks(): Tank[] {
         return this.othersTanks;
     }
 
-    getAllTanks(): Tank[] {
+    public getAllTanks(): Tank[] {
         return this.allTanks;
     }
 
-    removeElem(x: number, y: number) {
+    public removeElem(x: number, y: number) {
         this.boardElements[x][y] = null;
     }
 
-    removeTank(tank: Tank) {
-        this.allTanks = this.allTanks.filter(t => t != tank);
-        this.othersTanks = this.othersTanks.filter(t => t != tank);
+    public removeTank(tank: Tank) {
+        this.allTanks = this.allTanks.filter((t) => t !== tank);
+        this.othersTanks = this.othersTanks.filter((t) => t !== tank);
     }
 
     private boardInitialize() {

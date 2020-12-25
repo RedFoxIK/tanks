@@ -1,18 +1,18 @@
+import { default as PIXI_SOUND } from "pixi-sound";
 import * as PIXI from "pixi.js";
-import { default as PIXI_SOUND } from 'pixi-sound';
-import {BoardSprite, SpriteWrapper} from "../model/spriteWrapper";
-import {AnimationAsset, BoardAsset, BonusAsset, ButtonAsset, SoundAsset, TankAsset} from "../model/asset";
 import {Sprite} from "pixi.js";
+import {AnimationAsset, BoardAsset, BonusAsset, ButtonAsset, SoundAsset, TankAsset} from "../model/asset";
+import {BoardSprite, SpriteWrapper} from "../model/spriteWrapper";
 import {EnumService} from "./enum.service";
 
 export class SpriteService {
-    readonly stage: PIXI.Container;
-    readonly renderer: PIXI.Renderer;
-    readonly loader: PIXI.Loader;
+    public readonly stage: PIXI.Container;
+    public readonly renderer: PIXI.Renderer;
+    public readonly loader: PIXI.Loader;
 
     private isPreloadedPhase: boolean;
-    private fontFamily = 'Snippet';
-    private textColor = 'white';
+    private fontFamily = "Snippet";
+    private textColor = "white";
 
     private container: PIXI.Container;
 
@@ -36,7 +36,7 @@ export class SpriteService {
         this.stage.addChild(container);
     }
 
-    loadAssets(onProgressFn: Function, onCompleteFn: Function) {
+    public loadAssets(onProgressFn: Function, onCompleteFn: Function) {
         EnumService.applyFunction((key, value) => this.loader.add(key, value),
             ButtonAsset, BoardAsset, BonusAsset, TankAsset, AnimationAsset);
         this.loader.load();
@@ -44,87 +44,92 @@ export class SpriteService {
         this.loader.onProgress.add((e) => onProgressFn(e));
         this.loader.onComplete.add(() => {
             this.isPreloadedPhase = false;
-            onCompleteFn()
+            onCompleteFn();
         });
 
         EnumService.applyFunction((key, value) => PIXI_SOUND.add(key, value),
             SoundAsset);
     }
 
-    addText(text: string, x: number, y: number, fontSize: number): SpriteWrapper {
-        const stageText = new PIXI.Text(text, {fontSize: fontSize, fontFamily: this.fontFamily, fill: this.textColor});
+    public addText(text: string, x: number, y: number, fontSize: number): SpriteWrapper {
+        const stageText = new PIXI.Text(text, {fontSize, fontFamily: this.fontFamily, fill: this.textColor});
         this.container.addChild(stageText);
         const spriteWrapper = new SpriteWrapper(stageText, x, y);
-        this.spriteWrappersMap.set(spriteWrapper.id, spriteWrapper)
+        this.spriteWrappersMap.set(spriteWrapper.id, spriteWrapper);
         return spriteWrapper;
     }
 
-    createBoardElem(assetEnum: any, assetValue: string, x: number, y: number, scale?: number, rotatable?: boolean, animation?: boolean): BoardSprite {
+    public createBoardElem(assetEnum: any, assetValue: string, x: number, y: number, scale?: number,
+                           rotatable?: boolean, animation?: boolean): BoardSprite {
+
         const sprite = this.createSprite(assetEnum, assetValue);
         const boardSprite = new BoardSprite(sprite, x, y, rotatable, scale);
 
         !animation ? this.addSpriteToBoard(boardSprite) :
-            this.playAnimation(AnimationAsset.APPEAR, boardSprite.sprite.x, boardSprite.sprite.y,  () => this.addSpriteToBoard(boardSprite));
-
+            this.playAnimation(AnimationAsset.APPEAR, boardSprite.sprite.x, boardSprite.sprite.y,
+                () => this.addSpriteToBoard(boardSprite));
         return boardSprite;
     }
 
-    addSprite(assetEnum: any, assetValue: string, x: number, y: number, width?: number, height?: number): SpriteWrapper {
+    public addSprite(assetEnum: any, assetValue: string, x: number, y: number, width?: number,
+                     height?: number): SpriteWrapper {
         const sprite = this.createSprite(assetEnum, assetValue);
         const spriteWrapper = new SpriteWrapper(sprite, x, y, width, height);
         this.addSpriteToBoard(spriteWrapper);
         return spriteWrapper;
     }
 
-    makeSpriteInteractive(spriteWrapper: SpriteWrapper, buttonMode: boolean, event: string, callback: Function) {
+    public makeSpriteInteractive(spriteWrapper: SpriteWrapper, buttonMode: boolean, event: string, callback: Function) {
         spriteWrapper.sprite.interactive = true;
         spriteWrapper.sprite.buttonMode = true;
         spriteWrapper.sprite.on(event, () => callback());
     }
 
-    rerenderScene() {
+    public rerenderScene() {
         const aboveElemIndexes = [];
         this.container.children.forEach((e, i) => {
             if (e.zIndex > 0) {
                 aboveElemIndexes.push(i);
             }
-        })
+        });
 
         const reservedForAboveFirstInx = this.container.children.length - aboveElemIndexes.length;
-        const aboveElemInxWillBeSwapped = aboveElemIndexes.filter(val => val < reservedForAboveFirstInx);
+        const aboveElemInxWillBeSwapped = aboveElemIndexes.filter((val) => val < reservedForAboveFirstInx);
         if (aboveElemInxWillBeSwapped.length > 0) {
             const bottomElemInxWillBeSwapped = [];
             for (let i = reservedForAboveFirstInx; i < this.container.children.length; i++) {
-                if (this.container.children[i].zIndex == 0) {
+                if (this.container.children[i].zIndex === 0) {
                     bottomElemInxWillBeSwapped.push(i);
                 }
             }
             for (let i = 0; i < aboveElemInxWillBeSwapped.length; i++) {
-                let temp = this.container.children[aboveElemInxWillBeSwapped[i]];
-                this.container.children[aboveElemInxWillBeSwapped[i]] = this.container.children[bottomElemInxWillBeSwapped[i]];
+                const temp = this.container.children[aboveElemInxWillBeSwapped[i]];
+                this.container.children[aboveElemInxWillBeSwapped[i]] =
+                    this.container.children[bottomElemInxWillBeSwapped[i]];
                 this.container.children[bottomElemInxWillBeSwapped[i]] = temp;
             }
             this.renderer.render(this.container);
         }
     }
 
-    removeSprites(...spriteWrappers: SpriteWrapper[]): void {
-        spriteWrappers.forEach(wrap => this.spriteWrappersMap.delete(wrap.id))
-        this.container.removeChild(...spriteWrappers.map(wrap => wrap.sprite));
+    public removeSprites(...spriteWrappers: SpriteWrapper[]): void {
+        spriteWrappers.forEach((wrap) => this.spriteWrappersMap.delete(wrap.id));
+        this.container.removeChild(...spriteWrappers.map((wrap) => wrap.sprite));
     }
 
-    clearScene(): void {
-       this.container.removeChild(...Array.from(this.spriteWrappersMap.values()).map(wrap => wrap.sprite));
+    public clearScene(): void {
+       this.container.removeChild(...Array.from(this.spriteWrappersMap.values()).map((wrap) => wrap.sprite));
        this.spriteWrappersMap.clear();
     }
 
-    playSound(soundAssetValue: string) {
+    public playSound(soundAssetValue: string) {
         PIXI_SOUND.play(EnumService.getKey(SoundAsset, soundAssetValue));
     }
 
-    playAnimation(animAssetValue: string, x: number, y: number, oncomplete?: Function) {
+    public playAnimation(animAssetValue: string, x: number, y: number, oncomplete?: Function) {
         const animationKey = EnumService.getKey(AnimationAsset, animAssetValue);
-        const animation = new PIXI.AnimatedSprite(this.loader.resources[animationKey].spritesheet.animations['animation']);
+        const animation = new PIXI.AnimatedSprite(
+            this.loader.resources[animationKey].spritesheet.animations.animation);
 
         const spriteWrapper = new BoardSprite(animation, x, y, true, 3);
         this.addSpriteToBoard(spriteWrapper);
@@ -136,18 +141,18 @@ export class SpriteService {
             if (oncomplete) {
                 oncomplete();
             }
-        }
+        };
         animation.play();
     }
 
     private createSprite(assetEnum: any, assetValue: string): Sprite {
-        const texture = !this.isPreloadedPhase ? this.loader.resources[EnumService.getKey(assetEnum, assetValue)].texture :
-            PIXI.Texture.from(assetValue);
+        const texture = !this.isPreloadedPhase ?
+            this.loader.resources[EnumService.getKey(assetEnum, assetValue)].texture : PIXI.Texture.from(assetValue);
         return new PIXI.Sprite(texture);
     }
 
     private addSpriteToBoard(spriteWrapper: SpriteWrapper) {
         this.container.addChild(spriteWrapper.sprite);
-        this.spriteWrappersMap.set(spriteWrapper.id, spriteWrapper)
+        this.spriteWrappersMap.set(spriteWrapper.id, spriteWrapper);
     }
 }
