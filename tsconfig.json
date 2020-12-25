@@ -3,6 +3,11 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "target": "es6",
+    "max-classes-per-file": false,
+    "max-line-length": [
+      true,
+      140
+    ],
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",

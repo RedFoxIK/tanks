@@ -1,19 +1,12 @@
 import * as PIXI from "pixi.js";
 import {ButtonAsset, LoaderAsset, SoundAsset} from "../model/asset";
-import {GameManagerService} from "./gameManager.service";
 import {SpriteService} from "./sprite.service";
 
 export class ViewRenderService {
-    public readonly SCREEN_HEIGHT = 768;
-    public readonly SCREEN_WIDTH = 1024;
-    public readonly BACKGROUND_COLOR = 0x123E67;
-
     public readonly spriteService: SpriteService;
-    private gameManagerService: GameManagerService;
 
-    constructor(spriteService: SpriteService, gameManagerService: GameManagerService) {
+    constructor(spriteService: SpriteService) {
         this.spriteService = spriteService;
-        this.gameManagerService = gameManagerService;
     }
 
     public renderPreloadScene(callback: Function) {
@@ -36,9 +29,8 @@ export class ViewRenderService {
         this.spriteService.loadAssets(onProgress, onComplete);
     }
 
-    public renderGameScene(boardModel: any) {
+    public renderGameScene() {
         this.spriteService.changeContainer(new PIXI.Container());
-        this.gameManagerService.generateBoard(boardModel);
     }
 
     public renderSuccessfulResultScene(scores: number) {

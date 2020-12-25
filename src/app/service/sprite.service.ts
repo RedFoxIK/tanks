@@ -6,24 +6,36 @@ import {BoardSprite, SpriteWrapper} from "../model/spriteWrapper";
 import {EnumService} from "./enum.service";
 
 export class SpriteService {
-    public readonly stage: PIXI.Container;
-    public readonly renderer: PIXI.Renderer;
-    public readonly loader: PIXI.Loader;
+    public readonly ticker: PIXI.Ticker;
+    private readonly stage: PIXI.Container;
+    private readonly renderer: PIXI.Renderer;
+    private readonly loader: PIXI.Loader;
 
     private isPreloadedPhase: boolean;
     private fontFamily = "Snippet";
     private textColor = "white";
 
+    private readonly SCREEN_HEIGHT = 768;
+    private readonly SCREEN_WIDTH = 1024;
+    private readonly BACKGROUND_COLOR = 0x123E67;
+
     private container: PIXI.Container;
 
     private spriteWrappersMap: Map<string, SpriteWrapper> = new Map<string, SpriteWrapper>();
 
-    constructor(app: PIXI.Application, view: HTMLElement) {
+    constructor(view: HTMLElement) {
+        const app = new PIXI.Application({
+            backgroundColor: this.BACKGROUND_COLOR,
+            height: this.SCREEN_HEIGHT,
+            width: this.SCREEN_WIDTH,
+        });
+
         this.isPreloadedPhase = true;
 
         this.stage = app.stage;
         this.loader = app.loader;
         this.renderer = app.renderer;
+        this.ticker = app.ticker;
 
         view.replaceChild(app.view, view.lastElementChild);
     }
@@ -61,14 +73,11 @@ export class SpriteService {
     }
 
     public createBoardElem(assetEnum: any, assetValue: string, x: number, y: number, scale?: number,
-                           rotatable?: boolean, animation?: boolean): BoardSprite {
+                           rotatable?: boolean): BoardSprite {
 
         const sprite = this.createSprite(assetEnum, assetValue);
         const boardSprite = new BoardSprite(sprite, x, y, rotatable, scale);
-
-        !animation ? this.addSpriteToBoard(boardSprite) :
-            this.playAnimation(AnimationAsset.APPEAR, boardSprite.sprite.x, boardSprite.sprite.y,
-                () => this.addSpriteToBoard(boardSprite));
+        this.addSpriteToBoard(boardSprite);
         return boardSprite;
     }
 

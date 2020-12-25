@@ -148,7 +148,6 @@ export class Leaf extends BoardElement {
     }
 }
 
-// TODO: remove string?
 export enum BoardObject {
     BLOCK = "BLOCK",
     WATER = "WATER",

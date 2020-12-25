@@ -6,7 +6,7 @@ export abstract class Bonus extends BoardElement {
     public firstTick: number;
     public lifeTick: number;
 
-    protected tank: Tank;
+    protected readonly tank: Tank;
 
     private lastTicks = 200;
     private appliedTicks = 500;
@@ -31,11 +31,11 @@ export abstract class Bonus extends BoardElement {
 
     public isFinished() {
         this.appliedTicks--;
-        if (this.appliedTicks <= 0) {
-            this.finishEffect();
-            return true;
-        }
-        return false;
+        return this.appliedTicks <= 0;
+    }
+
+    public getTank() {
+        return this.tank;
     }
 }
 
@@ -78,7 +78,7 @@ export class Snail extends Bonus {
 
     public apply(tank: Tank): void {
         this.tank = tank;
-        tank.decreaseSpeed(0.025);
+        tank.decreaseSpeed();
     }
 
     public finishEffect(): void {
@@ -94,7 +94,7 @@ export class Speed extends Bonus {
 
     public apply(tank: Tank): void {
         this.tank = tank;
-        tank.increaseSpeed(0.05);
+        tank.increaseSpeed();
     }
 
     public finishEffect(): void {

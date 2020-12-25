@@ -1,7 +1,7 @@
 import {BoardObject, Point} from "../model/boardElement";
 
 export class BoardModel {
-    public readonly block: BoardItemModel;
+    public readonly blocks: BoardItemModel;
     public readonly eagle: BoardItemModel;
     public readonly leaves: BoardItemModel;
     public readonly walls1: BoardItemModel;

@@ -1,5 +1,6 @@
 import {noop, Subject, Subscription} from "rxjs";
 import {BoardModel} from "../api/boardModel";
+import {TankModel} from "../api/tankModel";
 import {AnimationAsset, SoundAsset} from "../model/asset";
 import {Board} from "../model/board";
 import {BoardElement, BoardObject, Eagle, Wall} from "../model/boardElement";
@@ -28,23 +29,22 @@ export class GameManagerService {
     private killTank$: Map<Bullet, Subscription> = new Map<Bullet, Subscription>();
     private explodes$: Map<Bullet, Subscription> = new Map<Bullet, Subscription>();
 
-    constructor(spriteService: SpriteService, game: Game) {
+    constructor(spriteService: SpriteService, statisticService: StatisticService, game: Game) {
         this.game = game;
         this.spriteService = spriteService;
+        this.statisticsService = statisticService;
+
         this.boardElementFactory = new BoardElementsFactory(this.spriteService);
         this.bonusService = new BonusService(this.spriteService, this.boardElementFactory);
         this.board = new Board();
         this.tankManagerService = new TankManagerService(this.board, this.boardElementFactory, this.spriteService);
-        this.statisticsService = new StatisticService(this.spriteService);
     }
 
-    public generateBoard(boardModel: BoardModel) {
-        for (let i = 0; i < 32; i++) {
-            this.createBoardElem(0, i, BoardObject.BLOCK);
-            this.createBoardElem(31, i, BoardObject.BLOCK);
-            this.createBoardElem(i, 0, BoardObject.BLOCK);
-            this.createBoardElem(i, 31, BoardObject.BLOCK);
-        }
+    public generateBoard(boardResponse: any, tankResponse: any) {
+        const boardModel = boardResponse as BoardModel;
+        const tankModel = tankResponse as TankModel;
+
+        this.createBoardBorder();
 
         Object.keys(boardModel).forEach((key) => {
             boardModel[key].assets.forEach((asset) => {
@@ -52,7 +52,7 @@ export class GameManagerService {
             });
         });
 
-        this.tankManagerService.initializeTanks();
+        this.tankManagerService.initializeTanks(tankModel);
         this.spriteService.rerenderScene();
 
         this.subscribe();
@@ -100,8 +100,13 @@ export class GameManagerService {
         this.board.addBoardElemToBoard(this.boardElementFactory.createBoardElem(boardObjectName, x, y, wallType), x, y);
     }
 
-    public getScores(): number {
-        return this.statisticsService.retrieveTotalScores();
+    private createBoardBorder() {
+        for (let i = 0; i < Board.BOARD_SIZE; i++) {
+            this.createBoardElem(0, i, BoardObject.BLOCK);
+            this.createBoardElem(31, i, BoardObject.BLOCK);
+            this.createBoardElem(i, 0, BoardObject.BLOCK);
+            this.createBoardElem(i, 31, BoardObject.BLOCK);
+        }
     }
 
     private subscribe() {
@@ -151,7 +156,6 @@ export class GameManagerService {
                 this.successGameOver$.next(false);
                 this.takeLife$.forEach((value) => value.unsubscribe());
             } else {
-                this.takeLife$.forEach((value, key) => console.log(key));
                 this.takeLife$.get(tank).unsubscribe();
                 this.takeLife$.delete(tank);
 
@@ -166,7 +170,6 @@ export class GameManagerService {
                 const newTank = this.tankManagerService.replaceTank(tank);
                 if (newTank) {
                     this.takeLife$.set(newTank, newTank.lifeTaken$.subscribe((t) => this.resolveTankSituation(t)));
-                    this.takeLife$.forEach((value, key) => console.log(key));
                     this.explodes$.set(newTank.getBullet(), newTank.getBullet().explode$.subscribe(
                         (b) => this.handleExplosion(b)));
                     this.killTank$.set(newTank.getBullet(), newTank.getBullet().killTank$.subscribe(

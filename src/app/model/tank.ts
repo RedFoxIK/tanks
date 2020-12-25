@@ -4,11 +4,10 @@ import {Direction} from "./direction";
 import {BoardSprite} from "./spriteWrapper";
 
 export class Tank extends MovableBoardElement {
-    public static INITIAL_SPEED = 0.04;
+    public static INITIAL_SPEED = 0.05;
 
     public readonly startX: number;
     public readonly startY: number;
-
     public readonly tankType: TankType;
     public readonly bullet: Bullet;
 
@@ -16,10 +15,12 @@ export class Tank extends MovableBoardElement {
 
     private lifeAmount: number;
     private isImmortal: boolean;
+    private initialSpeed: number;
 
     constructor(boardSprite: BoardSprite, tankType: TankType, bulletSprite: BoardSprite) {
         const direction = Direction.NONE;
-        super(boardSprite, true, Tank.INITIAL_SPEED, direction);
+        const speed = tankType === TankType.PLAYER ? Tank.INITIAL_SPEED : Tank.INITIAL_SPEED / 2;
+        super(boardSprite, true, speed, direction);
 
         this.startX = boardSprite.boardX;
         this.startY = boardSprite.boardY;
@@ -29,6 +30,7 @@ export class Tank extends MovableBoardElement {
 
         this.lifeAmount = 1;
         this.isImmortal = false;
+        this.initialSpeed = speed;
 
         if (tankType === TankType.ENEMY) {
             this.boardSprite.sprite.rotation = Direction.DOWN;
@@ -37,7 +39,7 @@ export class Tank extends MovableBoardElement {
     }
 
     public setInitialSpeed() {
-        this.speed = Tank.INITIAL_SPEED;
+        this.speed = this.initialSpeed;
     }
 
     public activateBullet(): boolean {
@@ -83,18 +85,12 @@ export class Tank extends MovableBoardElement {
         return this.lifeAmount <= 0;
     }
 
-    public increaseSpeed(speed: number): void {
-        this.speed += speed;
-        if (this.speed > 0.1) {
-            this.speed = 0.1;
-        }
+    public increaseSpeed(): void {
+        this.speed = this.initialSpeed * 2;
     }
 
-    public decreaseSpeed(speed: number): void {
-        this.speed -= speed;
-        if (this.speed < 0.025) {
-            this.speed = 0.025;
-        }
+    public decreaseSpeed(): void {
+        this.speed = this.initialSpeed / 2;
     }
 
     public makeImmortal() {

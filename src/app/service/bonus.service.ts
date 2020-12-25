@@ -36,7 +36,11 @@ export class BonusService {
 
         for (let i = 0; i < this.appliedBonuses.length; i++) {
             if (this.appliedBonuses[i].isFinished()) {
+                const bonus = this.appliedBonuses[i];
                 this.appliedBonuses.splice(i, 1);
+                if (this.appliedBonuses.filter(b => typeof b === typeof bonus && bonus.getTank() === b.getTank()).length === 0) {
+                    bonus.finishEffect();
+                }
             }
         }
 

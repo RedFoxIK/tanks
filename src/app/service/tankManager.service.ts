@@ -1,4 +1,4 @@
-import tanksResponse from "../api/tanks.json";
+import {TankModel} from "../api/tankModel";
 import {Board} from "../model/board";
 import {Direction} from "../model/direction";
 import {Tank, TankType} from "../model/tank";
@@ -8,7 +8,9 @@ import {EnumService} from "./enum.service";
 import {SpriteService} from "./sprite.service";
 
 export class TankManagerService {
-    private readonly MAX_TANK_AMOUNT = 10;
+    private static readonly MAX_TANK_AMOUNT = 10;
+    private static readonly SAME_DIRECTION_POSSIBILITY = 60;
+
     private totalAmount;
 
     private boardElementFactory: BoardElementsFactory;
@@ -23,17 +25,17 @@ export class TankManagerService {
         this.spriteService = spriteService;
     }
 
-    public initializeTanks() {
-        this.createTank(tanksResponse.player.x, tanksResponse.player.y, TankType.PLAYER);
-        tanksResponse.enemies.forEach((enemy) => this.createTank(enemy.x, enemy.y, TankType.ENEMY));
-        this.totalAmount = tanksResponse.enemies.length;
+    public initializeTanks(tankModel: TankModel) {
+        this.createTank(tankModel.player.x, tankModel.player.y, TankType.PLAYER);
+        tankModel.enemies.forEach((enemy) => this.createTank(enemy.x, enemy.y, TankType.ENEMY));
+        this.totalAmount = tankModel.enemies.length;
     }
 
     public replaceTank(tank: Tank): Tank | null {
         this.board.removeTank(tank);
         this.spriteService.removeSprites(tank.boardSprite, tank.getBullet().boardSprite);
 
-        if (this.totalAmount < this.MAX_TANK_AMOUNT) {
+        if (this.totalAmount < TankManagerService.MAX_TANK_AMOUNT) {
             this.totalAmount++;
             const newTank = this.boardElementFactory.createTank(tank.startX, tank.startY, TankType.ENEMY);
             this.board.addTankToBoard(newTank);
@@ -50,7 +52,9 @@ export class TankManagerService {
         let previousDirection = this.previousEnemiesDirections.get(tank);
         previousDirection = previousDirection ? previousDirection : Direction.DOWN;
         const nextDirection = this.retrieveNextDirection(tank, previousDirection);
-        tank.activateBullet();
+        if (this.previousEnemiesDirections.get(tank) && !tank.getBullet().isActive()) {
+            tank.activateBullet();
+        }
         tank.setDirection(nextDirection);
         tank.move(tank.retrieveNextMovement());
         this.previousEnemiesDirections.set(tank, nextDirection);
@@ -68,7 +72,7 @@ export class TankManagerService {
         const arrayForRandomDirectionsChoice = [];
         arrayForRandomDirectionsChoice.push(...possibleDirections);
         if (possibleDirections.indexOf(direction) >= 0) {
-            arrayForRandomDirectionsChoice.push(...Array(60).fill(direction));
+            arrayForRandomDirectionsChoice.push(...Array(TankManagerService.SAME_DIRECTION_POSSIBILITY).fill(direction));
         }
         arrayForRandomDirectionsChoice.push(...possibleDirections);
         return arrayForRandomDirectionsChoice[Math.floor(Math.random()
