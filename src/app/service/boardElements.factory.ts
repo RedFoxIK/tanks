@@ -2,7 +2,7 @@ import {BoardAsset, BonusAsset, TankAsset} from "../model/asset";
 import {Block, BoardObject, Eagle, Leaf, Wall, Water} from "../model/boardElement";
 import {BonusType, Life, Shield, Snail, Speed} from "../model/bonus";
 import {Tank, TankType} from "../model/tank";
-import {SpriteService} from "./sprite.service";
+import {AssetService} from "./asset.service";
 
 export class BoardElementsFactory {
 
@@ -19,9 +19,9 @@ export class BoardElementsFactory {
         }
     }
 
-    private spriteService: SpriteService;
+    private spriteService: AssetService;
 
-    constructor(spriteService: SpriteService) {
+    constructor(spriteService: AssetService) {
         this.spriteService = spriteService;
     }
 

@@ -1,12 +1,12 @@
 import {BoardAsset, TankAsset} from "../model/asset";
 import {SpriteWrapper} from "../model/spriteWrapper";
-import {SpriteService} from "./sprite.service";
+import {AssetService} from "./asset.service";
 
 export class StatisticService {
 
     public readonly TANK_COST = 100;
     public readonly WALL_COST = 10;
-    private spriteService: SpriteService;
+    private spriteService: AssetService;
 
     private scores = 0;
 
@@ -16,7 +16,7 @@ export class StatisticService {
     private killedTankAmountSprite: SpriteWrapper;
     private removedWallAmountSprite: SpriteWrapper;
 
-    constructor(spriteService: SpriteService) {
+    constructor(spriteService: AssetService) {
         this.spriteService = spriteService;
     }
 

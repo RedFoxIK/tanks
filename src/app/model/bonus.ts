@@ -6,7 +6,7 @@ export abstract class Bonus extends BoardElement {
     public firstTick: number;
     public lifeTick: number;
 
-    protected readonly tank: Tank;
+    protected tank: Tank;
 
     private lastTicks = 200;
     private appliedTicks = 500;

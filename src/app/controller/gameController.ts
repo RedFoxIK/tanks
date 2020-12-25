@@ -1,5 +1,5 @@
 import {Game, GameState} from "../model/game";
-import {SpriteService} from "../service/sprite.service";
+import {AssetService} from "../service/asset.service";
 import {StatisticService} from "../service/statistics.service";
 import {ViewRenderService} from "../service/viewRender.service";
 
@@ -8,7 +8,7 @@ export class GameController {
     private viewRenderService: ViewRenderService;
     private statisticService: StatisticService;
 
-    constructor(spriteService: SpriteService, statisticService: StatisticService, game: Game) {
+    constructor(spriteService: AssetService, statisticService: StatisticService, game: Game) {
         this.game = game;
         this.statisticService = statisticService;
 

@@ -1,15 +1,15 @@
 import * as PIXI from "pixi.js";
 import {ButtonAsset, LoaderAsset, SoundAsset} from "../model/asset";
-import {SpriteService} from "./sprite.service";
+import {AssetService} from "./asset.service";
 
 export class ViewRenderService {
-    public readonly spriteService: SpriteService;
+    public readonly spriteService: AssetService;
 
-    constructor(spriteService: SpriteService) {
+    constructor(spriteService: AssetService) {
         this.spriteService = spriteService;
     }
 
-    public renderPreloadScene(callback: Function) {
+    public renderPreloadScene(callback: () => void) {
         this.spriteService.changeContainer(new PIXI.Container());
         this.spriteService.addText("Tank Game", 280, 200, 100);
 
@@ -42,7 +42,7 @@ export class ViewRenderService {
 
     public renderUnsuccessfulResultScene(scores: number) {
         this.spriteService.changeContainer(new PIXI.Container());
-        this.spriteService.addText("LOOSE", 320, 200, 100,);
+        this.spriteService.addText("LOOSE", 320, 200, 100);
         this.spriteService.addText("SCORES: " + scores, 350, 500, 50, "red");
         this.spriteService.playSound(SoundAsset.LOSE_SOUND);
     }

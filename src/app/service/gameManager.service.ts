@@ -6,30 +6,29 @@ import {Board} from "../model/board";
 import {BoardElement, BoardObject, Eagle, Point, Wall} from "../model/boardElement";
 import {Game} from "../model/game";
 import {Bullet, Tank, TankType} from "../model/tank";
+import {AssetService} from "./asset.service";
 import {BoardElementsFactory} from "./boardElements.factory";
 import {BonusService} from "./bonus.service";
-import {CollisionResolverService} from "./collisionResolver.service";
-import {SpriteService} from "./sprite.service";
 import {StatisticService} from "./statistics.service";
 import {TankManagerService} from "./tankManager.service";
 
 export class GameManagerService {
     public readonly board: Board;
+    public readonly successGameOver$ = new Subject<boolean>();
 
-    public successGameOver$ = new Subject<boolean>();
-    private readonly spriteService: SpriteService;
+    private readonly spriteService: AssetService;
     private readonly boardElementFactory: BoardElementsFactory;
+
     private bonusService: BonusService;
     private tankManagerService: TankManagerService;
     private statisticsService: StatisticService;
-
     private game: Game;
 
     private takeLife$: Map<Tank, Subscription> = new Map<Tank, Subscription>();
     private killTank$: Map<Bullet, Subscription> = new Map<Bullet, Subscription>();
     private explodes$: Map<Bullet, Subscription> = new Map<Bullet, Subscription>();
 
-    constructor(spriteService: SpriteService, statisticService: StatisticService, game: Game) {
+    constructor(spriteService: AssetService, statisticService: StatisticService, game: Game) {
         this.game = game;
         this.spriteService = spriteService;
         this.statisticsService = statisticService;
@@ -59,15 +58,6 @@ export class GameManagerService {
         this.board.getAllTanks().forEach((tank) => this.subscribeOnTankEvents(tank));
     }
 
-    public moveTank() {
-        const newPoint = this.board.getPlayerTank().retrieveNextMovement();
-        if (newPoint && !CollisionResolverService.isCollisionDetectedForTank(this.board.getPlayerTank(),
-            newPoint, this.board)) {
-
-            this.board.getPlayerTank().move(newPoint);
-        }
-    }
-
     public shoot() {
         if (!this.board.getPlayerTank().getBullet().isActive()) {
             this.board.getPlayerTank().activateBullet();
@@ -77,18 +67,8 @@ export class GameManagerService {
 
     public everyTick() {
         this.bonusService.handleBonuses(this.board);
-
-        this.moveTank();
-        this.tankManagerService.moveEnemies();
-
-        const bullets = this.board.getAllTanks().map((tank) => tank.getBullet());
-        bullets.forEach((b) => {
-            const nextPoint = b.retrieveNextMovement();
-            b.move(nextPoint);
-            CollisionResolverService.retrieveTargetForBullet(b, this.board);
-        });
-        CollisionResolverService.calculateBulletsWithTankCollisions(this.board);
-
+        this.tankManagerService.moveTanks();
+        this.tankManagerService.handleBullets();
         this.spriteService.rerenderScene();
     }
 

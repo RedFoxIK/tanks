@@ -3,19 +3,21 @@ import boardMapResponse from "../api/board-map.json";
 import tanksResponse from "../api/tanks.json";
 import {Direction} from "../model/direction";
 import {Game, GameState} from "../model/game";
+import {AssetService} from "../service/asset.service";
 import {GameManagerService} from "../service/gameManager.service";
-import {SpriteService} from "../service/sprite.service";
 import {StatisticService} from "../service/statistics.service";
 
 export class BoardController {
     private static MOVEMENTS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyD", "KeyS", "KeyA"];
-    private gameManagerService: GameManagerService;
 
     private game: Game;
     private ticker: Ticker;
-    private gameStateInProgress = false;
+    private gameManagerService: GameManagerService;
 
-    constructor(spriteService: SpriteService, statisticService: StatisticService, game: Game) {
+    private gameStateInProgress = false;
+    private listeners = new Map<string, any>();
+
+    constructor(spriteService: AssetService, statisticService: StatisticService, game: Game) {
         this.game = game;
 
         this.gameManagerService = new GameManagerService(spriteService, statisticService, game);
@@ -24,6 +26,9 @@ export class BoardController {
         this.gameManagerService.successGameOver$.subscribe((result) => result ? game.changeState(GameState.WIN)
             :  game.changeState(GameState.LOOSE));
         this.subscribeOnGameStateChange();
+
+        this.listeners.set("keydown", (e) => this.keyDown(e));
+        this.listeners.set("keyup", (e) => this.keyUp(e));
     }
 
     private subscribeOnGameStateChange() {
@@ -31,21 +36,17 @@ export class BoardController {
             if (GameState.IN_PROGRESS === state) {
                 this.gameStateInProgress = true;
                 setTimeout(() => {
-                    this.addEventListeners();
+                    this.listeners.forEach((value, key) =>  window.addEventListener(key, value));
                     this.animateScene();
                     this.gameManagerService.generateBoard(boardMapResponse, tanksResponse);
                 }, 500);
             } else if (this.gameStateInProgress) {
                 this.game.changeState$.unsubscribe();
                 this.gameManagerService.successGameOver$.unsubscribe();
+                this.listeners.forEach((value, key) => window.removeEventListener(key, value));
                 this.ticker.stop();
             }
         });
-    }
-
-    private addEventListeners() {
-        window.addEventListener("keydown", (e) => this.keyDown(e));
-        window.addEventListener("keyup", (e) => this.keyUp(e));
     }
 
     private keyDown(e) {

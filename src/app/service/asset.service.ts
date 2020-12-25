@@ -5,7 +5,7 @@ import {AnimationAsset, BoardAsset, BonusAsset, ButtonAsset, SoundAsset, TankAss
 import {BoardSprite, SpriteWrapper} from "../model/spriteWrapper";
 import {EnumService} from "./enum.service";
 
-export class SpriteService {
+export class AssetService {
     public readonly ticker: PIXI.Ticker;
     private readonly stage: PIXI.Container;
     private readonly renderer: PIXI.Renderer;
@@ -46,7 +46,7 @@ export class SpriteService {
         this.stage.addChild(container);
     }
 
-    public loadAssets(onProgressFn: Function, onCompleteFn: Function) {
+    public loadAssets(onProgressFn: (e: any) => void, onCompleteFn: () => void) {
         EnumService.applyFunction((key, value) => this.loader.add(key, value),
             ButtonAsset, BoardAsset, BonusAsset, TankAsset, AnimationAsset);
         this.loader.load();
@@ -57,8 +57,7 @@ export class SpriteService {
             onCompleteFn();
         });
 
-        EnumService.applyFunction((key, value) => PIXI_SOUND.add(key, value),
-            SoundAsset);
+        EnumService.applyFunction((key, value) => PIXI_SOUND.add(key, value), SoundAsset);
     }
 
     public addText(text: string, x: number, y: number, fontSize: number, color?: string): SpriteWrapper {
@@ -87,7 +86,7 @@ export class SpriteService {
         return spriteWrapper;
     }
 
-    public makeSpriteInteractive(spriteWrapper: SpriteWrapper, buttonMode: boolean, event: string, callback: Function) {
+    public makeSpriteInteractive(spriteWrapper: SpriteWrapper, buttonMode: boolean, event: string, callback: () => void) {
         spriteWrapper.sprite.interactive = true;
         spriteWrapper.sprite.buttonMode = true;
         spriteWrapper.sprite.on(event, () => callback());
@@ -134,7 +133,7 @@ export class SpriteService {
         PIXI_SOUND.play(EnumService.getKey(SoundAsset, soundAssetValue));
     }
 
-    public playAnimation(animAssetValue: string, x: number, y: number, oncomplete?: Function) {
+    public playAnimation(animAssetValue: string, x: number, y: number, oncomplete?: () => void) {
         const animationKey = EnumService.getKey(AnimationAsset, animAssetValue);
         const animation = new PIXI.AnimatedSprite(
             this.loader.resources[animationKey].spritesheet.animations.animation);

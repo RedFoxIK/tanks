@@ -1,11 +1,12 @@
 import {TankModel} from "../api/tankModel";
+import {SoundAsset} from "../model/asset";
 import {Board} from "../model/board";
 import {Direction} from "../model/direction";
 import {Tank, TankType} from "../model/tank";
+import {AssetService} from "./asset.service";
 import {BoardElementsFactory} from "./boardElements.factory";
 import {CollisionResolverService} from "./collisionResolver.service";
 import {EnumService} from "./enum.service";
-import {SpriteService} from "./sprite.service";
 
 export class TankManagerService {
     private static readonly MAX_TANK_AMOUNT = 10;
@@ -14,12 +15,12 @@ export class TankManagerService {
     private totalAmount;
 
     private boardElementFactory: BoardElementsFactory;
-    private spriteService: SpriteService;
+    private spriteService: AssetService;
     private previousEnemiesDirections: Map<Tank, Direction> = new Map<Tank, Direction>();
 
     private readonly board: Board;
 
-    constructor(board: Board, boardElementFactory: BoardElementsFactory, spriteService: SpriteService) {
+    constructor(board: Board, boardElementFactory: BoardElementsFactory, spriteService: AssetService) {
         this.board = board;
         this.boardElementFactory = boardElementFactory;
         this.spriteService = spriteService;
@@ -44,8 +45,25 @@ export class TankManagerService {
         return null;
     }
 
-    public moveEnemies() {
+    public moveTanks() {
+        const newPlayerTankPoint = this.board.getPlayerTank().retrieveNextMovement();
+        if (newPlayerTankPoint && !CollisionResolverService.isCollisionDetectedForTank(this.board.getPlayerTank(),
+            newPlayerTankPoint, this.board)) {
+
+            this.board.getPlayerTank().move(newPlayerTankPoint);
+        }
+
         this.board.getOthersTanks().forEach((tank) => this.moveEnemy(tank));
+    }
+
+    public handleBullets() {
+        const bullets = this.board.getAllTanks().map((tank) => tank.getBullet());
+        bullets.forEach((b) => {
+            const nextPoint = b.retrieveNextMovement();
+            b.move(nextPoint);
+            CollisionResolverService.retrieveTargetForBullet(b, this.board);
+        });
+        CollisionResolverService.calculateBulletsWithTankCollisions(this.board);
     }
 
     private moveEnemy(tank: Tank) {
@@ -53,6 +71,7 @@ export class TankManagerService {
         previousDirection = previousDirection ? previousDirection : Direction.DOWN;
         const nextDirection = this.retrieveNextDirection(tank, previousDirection);
         if (this.previousEnemiesDirections.get(tank) && !tank.getBullet().isActive()) {
+            this.spriteService.playSound(SoundAsset.SHOOT_SOUND);
             tank.activateBullet();
         }
         tank.setDirection(nextDirection);

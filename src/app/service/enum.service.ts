@@ -10,7 +10,10 @@ export class EnumService {
             .filter((value) => !isNaN(value));
     }
 
-    public static applyFunction(callback: Function, ...enums: any) {
+    public static applyFunction(callback: (key: any, value: any) => void, ...enums: any) {
         enums.forEach((e) => Object.keys(e).forEach((key) => callback(key, e[key])));
+    }
+
+    private constructor() {
     }
 }

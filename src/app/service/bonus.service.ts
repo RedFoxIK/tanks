@@ -2,10 +2,10 @@ import {SoundAsset} from "../model/asset";
 import {Board} from "../model/board";
 import {Point} from "../model/boardElement";
 import {Bonus, BonusType} from "../model/bonus";
+import {AssetService} from "./asset.service";
 import {BoardElementsFactory} from "./boardElements.factory";
 import {CollisionResolverService} from "./collisionResolver.service";
 import {EnumService} from "./enum.service";
-import {SpriteService} from "./sprite.service";
 
 export class BonusService {
     private static readonly START_TICK_FOR_BONUSES = 150;
@@ -35,12 +35,12 @@ export class BonusService {
     private bonuses: Bonus[] = [];
     private appliedBonuses: Bonus[] = [];
 
-    private spriteService: SpriteService;
+    private spriteService: AssetService;
     private boardElementsFactory: BoardElementsFactory;
 
     private tick = 0;
 
-    constructor(spriteService: SpriteService, boardElementsFactory: BoardElementsFactory) {
+    constructor(spriteService: AssetService, boardElementsFactory: BoardElementsFactory) {
         this.spriteService = spriteService;
         this.boardElementsFactory = boardElementsFactory;
     }
