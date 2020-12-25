@@ -18,6 +18,7 @@ export class BoardElementsFactory {
                 return BoardAsset.WALL_4;
         }
     }
+
     private spriteService: SpriteService;
 
     constructor(spriteService: SpriteService) {
@@ -58,7 +59,7 @@ export class BoardElementsFactory {
         const bulletSprite = this.spriteService.createBoardElem(TankAsset, typeBullet, -1, -1, 0.5, true);
 
         const tankAssetType = tankType === TankType.PLAYER ? TankAsset.TANK : this.getRandomAssetForEnemyTank();
-        const boardSprite = this.spriteService.createBoardElem(TankAsset, tankAssetType, x, y, 1, true, true);
+        const boardSprite = this.spriteService.createBoardElem(TankAsset, tankAssetType, x, y, 1, true);
 
         return new Tank(boardSprite, tankType, bulletSprite);
     }

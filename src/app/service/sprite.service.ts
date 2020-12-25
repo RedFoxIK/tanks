@@ -11,7 +11,7 @@ export class SpriteService {
     private readonly renderer: PIXI.Renderer;
     private readonly loader: PIXI.Loader;
 
-    private isPreloadedPhase: boolean;
+    private isPreloadedPhase = true;
     private fontFamily = "Snippet";
     private textColor = "white";
 
@@ -29,8 +29,6 @@ export class SpriteService {
             height: this.SCREEN_HEIGHT,
             width: this.SCREEN_WIDTH,
         });
-
-        this.isPreloadedPhase = true;
 
         this.stage = app.stage;
         this.loader = app.loader;

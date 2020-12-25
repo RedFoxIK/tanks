@@ -9,50 +9,7 @@ import {SpriteService} from "./sprite.service";
 
 export class BonusService {
     private static readonly START_TICK_FOR_BONUSES = 150;
-    private readonly maxBonusesOnBoard = 3;
-
-    private bonuses: Bonus[] = [];
-    private appliedBonuses: Bonus[] = [];
-
-    private spriteService: SpriteService;
-    private boardElementsFactory: BoardElementsFactory;
-
-    private tick = 0;
-
-    constructor(spriteService: SpriteService, boardElementsFactory: BoardElementsFactory) {
-        this.spriteService = spriteService;
-        this.boardElementsFactory = boardElementsFactory;
-    }
-
-    public handleBonuses(board: Board) {
-        this.tick += 1;
-        if (this.tick > BonusService.START_TICK_FOR_BONUSES && this.bonuses.length < this.maxBonusesOnBoard &&
-            BonusService.getRandomInt(1000) % 300 === 0) {
-
-            this.generateNewBonus(board, this.tick);
-        }
-
-        this.areIntersectionsWithBonuses(board);
-
-        for (let i = 0; i < this.appliedBonuses.length; i++) {
-            if (this.appliedBonuses[i].isFinished()) {
-                const bonus = this.appliedBonuses[i];
-                this.appliedBonuses.splice(i, 1);
-                if (this.appliedBonuses.filter(b => typeof b === typeof bonus && bonus.getTank() === b.getTank()).length === 0) {
-                    bonus.finishEffect();
-                }
-            }
-        }
-
-        for (let i = 0; i < this.bonuses.length; i++) {
-            const currentBonus = this.bonuses[i];
-            currentBonus.boardSprite.sprite.alpha = currentBonus.isAlmostGone(this.tick) ? 0.5 : 1;
-
-            if (!currentBonus.isActive(this.tick)) {
-                this.removeBonusFromBoard(currentBonus, i);
-            }
-        }
-    }
+    private static readonly MAX_BONUSES_ON_BOARD = 3;
 
     private static retrieveRandomBonus(): number {
         const bonusTypes = EnumService.getNumericValues(BonusType);
@@ -75,6 +32,39 @@ export class BonusService {
         return Math.floor(Math.random() * Math.floor(max));
     }
 
+    private bonuses: Bonus[] = [];
+    private appliedBonuses: Bonus[] = [];
+
+    private spriteService: SpriteService;
+    private boardElementsFactory: BoardElementsFactory;
+
+    private tick = 0;
+
+    constructor(spriteService: SpriteService, boardElementsFactory: BoardElementsFactory) {
+        this.spriteService = spriteService;
+        this.boardElementsFactory = boardElementsFactory;
+    }
+
+    public handleBonuses(board: Board) {
+        this.tick += 1;
+        if (this.tick > BonusService.START_TICK_FOR_BONUSES && this.bonuses.length < BonusService.MAX_BONUSES_ON_BOARD &&
+            BonusService.getRandomInt(1000) % 300 === 0) {
+
+            this.generateNewBonus(board, this.tick);
+        }
+
+        this.areIntersectionsWithBonuses(board);
+        this.verifyAppliedBonusesActivity();
+        this.updateBoardBonusStatuses();
+    }
+
+    private generateNewBonus(board: Board, tick: number) {
+        const point = BonusService.retrieveRandomEmptyCeil(board);
+        if (point) {
+            const bonusType = BonusService.retrieveRandomBonus();
+            this.bonuses.push(this.boardElementsFactory.createBonusElem(bonusType, point.x, point.y, tick));
+        }
+    }
 
     private areIntersectionsWithBonuses(board: Board): void {
         board.getAllTanks().forEach((tank) => {
@@ -90,16 +80,35 @@ export class BonusService {
         });
     }
 
+    private verifyAppliedBonusesActivity() {
+        for (let i = 0; i < this.appliedBonuses.length; i++) {
+            if (this.appliedBonuses[i].isFinished()) {
+                const bonus = this.appliedBonuses[i];
+                this.appliedBonuses.splice(i, 1);
+                if (this.hasTankSameBonus(bonus)) {
+                    bonus.finishEffect();
+                }
+            }
+        }
+    }
+
+    private hasTankSameBonus(bonus: Bonus) {
+        return this.appliedBonuses.filter((b) => typeof b === typeof bonus && bonus.getTank() === b.getTank()).length === 0;
+    }
+
+    private updateBoardBonusStatuses() {
+        for (let i = 0; i < this.bonuses.length; i++) {
+            const currentBonus = this.bonuses[i];
+            currentBonus.boardSprite.sprite.alpha = currentBonus.isAlmostGone(this.tick) ? 0.5 : 1;
+
+            if (!currentBonus.isActive(this.tick)) {
+                this.removeBonusFromBoard(currentBonus, i);
+            }
+        }
+    }
+
     private removeBonusFromBoard(bonus: Bonus, index: number): void {
         this.spriteService.removeSprites(bonus.boardSprite);
         this.bonuses.splice(index, 1);
-    }
-
-    private generateNewBonus(board: Board, tick: number) {
-        const point = BonusService.retrieveRandomEmptyCeil(board);
-        if (point) {
-            const bonusType = BonusService.retrieveRandomBonus();
-            this.bonuses.push(this.boardElementsFactory.createBonusElem(bonusType, point.x, point.y, tick));
-        }
     }
 }

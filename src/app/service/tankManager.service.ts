@@ -66,7 +66,7 @@ export class TankManagerService {
             .filter((d) => d !== oppositeDirection && d !== Direction.NONE);
 
         possibleDirections = possibleDirections.filter((d) => {
-            const newPoint = tank.retrieveNextMovementWithDirection(d);
+            const newPoint = tank.retrieveNextMovement(d);
             return !CollisionResolverService.isCollisionDetectedForTank(tank, newPoint, this.board, d);
         });
         const arrayForRandomDirectionsChoice = [];

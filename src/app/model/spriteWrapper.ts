@@ -1,5 +1,6 @@
 import {Sprite} from "pixi.js";
 import {v4 as uuid} from "uuid";
+import {Point} from "./boardElement";
 
 export class SpriteWrapper {
     public readonly id: string;
@@ -57,13 +58,11 @@ export class BoardSprite extends SpriteWrapper {
         }
     }
 
-    public changeX(boardX: number): void {
-        this.boardX = boardX;
-        this.sprite.x = BoardSprite.getSpriteCoordinate(this.boardX, this.rotatable);
-    }
+    public changePosition(point: Point): void {
+        this.boardX = point.x;
+        this.boardY = point.y;
 
-    public changeY(boardY: number): void {
-        this.boardY = boardY;
+        this.sprite.x = BoardSprite.getSpriteCoordinate(this.boardX, this.rotatable);
         this.sprite.y = BoardSprite.getSpriteCoordinate(this.boardY, this.rotatable);
     }
 }

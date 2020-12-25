@@ -3,7 +3,7 @@ import {BoardModel} from "../api/boardModel";
 import {TankModel} from "../api/tankModel";
 import {AnimationAsset, SoundAsset} from "../model/asset";
 import {Board} from "../model/board";
-import {BoardElement, BoardObject, Eagle, Wall} from "../model/boardElement";
+import {BoardElement, BoardObject, Eagle, Point, Wall} from "../model/boardElement";
 import {Game} from "../model/game";
 import {Bullet, Tank, TankType} from "../model/tank";
 import {BoardElementsFactory} from "./boardElements.factory";
@@ -53,10 +53,10 @@ export class GameManagerService {
         });
 
         this.tankManagerService.initializeTanks(tankModel);
-        this.spriteService.rerenderScene();
-
-        this.subscribe();
         this.statisticsService.initializeStatisticsBoard();
+
+        this.spriteService.rerenderScene();
+        this.board.getAllTanks().forEach((tank) => this.subscribeOnTankEvents(tank));
     }
 
     public moveTank() {
@@ -69,28 +69,24 @@ export class GameManagerService {
     }
 
     public shoot() {
-        const newBulletCreated = this.board.getPlayerTank().activateBullet();
-        if (newBulletCreated) {
+        if (!this.board.getPlayerTank().getBullet().isActive()) {
+            this.board.getPlayerTank().activateBullet();
             this.spriteService.playSound(SoundAsset.SHOOT_SOUND);
         }
     }
 
     public everyTick() {
-        this.moveTank();
         this.bonusService.handleBonuses(this.board);
 
-        const newPoint = this.board.getPlayerTank().getBullet().retrieveNextMovement();
-        this.board.getPlayerTank().getBullet().move(newPoint);
-        CollisionResolverService.retrieveTargetForBullet(this.board.getPlayerTank().getBullet(), this.board);
+        this.moveTank();
+        this.tankManagerService.moveEnemies();
 
-        const bullets = this.board.getOthersTanks().map((tank) => tank.getBullet());
+        const bullets = this.board.getAllTanks().map((tank) => tank.getBullet());
         bullets.forEach((b) => {
             const nextPoint = b.retrieveNextMovement();
             b.move(nextPoint);
             CollisionResolverService.retrieveTargetForBullet(b, this.board);
         });
-
-        this.tankManagerService.moveEnemies();
         CollisionResolverService.calculateBulletsWithTankCollisions(this.board);
 
         this.spriteService.rerenderScene();
@@ -109,13 +105,27 @@ export class GameManagerService {
         }
     }
 
-    private subscribe() {
-        this.board.getAllTanks().forEach((tank) => {
-            this.takeLife$.set(tank, tank.lifeTaken$.subscribe((t) => this.resolveTankSituation(t)));
-            this.explodes$.set(tank.getBullet(), tank.getBullet().explode$.subscribe((b) => this.handleExplosion(b)));
-            this.killTank$.set(tank.getBullet(), tank.getBullet().killTank$.subscribe(
-                (t) => this.handleTankKilling(t)));
-        });
+    private removeBoardElem(boardElem: BoardElement) {
+        this.board.removeElem(boardElem.boardSprite.boardX, boardElem.boardSprite.boardY);
+        this.spriteService.removeSprites(boardElem.boardSprite);
+    }
+
+    private subscribeOnTankEvents(tank: Tank) {
+        this.takeLife$.set(tank, tank.lifeTaken$.subscribe((t) => this.resolveTankSituation(t)));
+        this.explodes$.set(tank.getBullet(), tank.getBullet().explode$.subscribe((b) => this.handleExplosion(b)));
+        this.killTank$.set(tank.getBullet(), tank.getBullet().killTank$.subscribe(
+            (t) => this.handleTankKilling(t)));
+    }
+
+    private unsubscribeFromTank(tank: Tank) {
+        this.takeLife$.get(tank).unsubscribe();
+        this.takeLife$.delete(tank);
+
+        this.explodes$.get(tank.getBullet()).unsubscribe();
+        this.explodes$.delete(tank.getBullet());
+
+        this.killTank$.get(tank.getBullet()).unsubscribe();
+        this.killTank$.delete(tank.getBullet());
     }
 
     private handleTankKilling(tank: Tank) {
@@ -145,35 +155,17 @@ export class GameManagerService {
         bullet.explode();
     }
 
-    private removeBoardElem(boardElem: BoardElement) {
-        this.board.removeElem(boardElem.boardSprite.boardX, boardElem.boardSprite.boardY);
-        this.spriteService.removeSprites(boardElem.boardSprite);
-    }
-
     private resolveTankSituation(tank: Tank) {
         if (tank.isDead()) {
             if (tank.tankType === TankType.PLAYER) {
                 this.successGameOver$.next(false);
                 this.takeLife$.forEach((value) => value.unsubscribe());
             } else {
-                this.takeLife$.get(tank).unsubscribe();
-                this.takeLife$.delete(tank);
-
-                this.explodes$.get(tank.getBullet()).unsubscribe();
-                this.explodes$.delete(tank.getBullet());
-
-                this.killTank$.get(tank.getBullet()).unsubscribe();
-                this.killTank$.delete(tank.getBullet());
-
+                this.unsubscribeFromTank(tank);
                 this.statisticsService.addTankToStatistics();
-
                 const newTank = this.tankManagerService.replaceTank(tank);
                 if (newTank) {
-                    this.takeLife$.set(newTank, newTank.lifeTaken$.subscribe((t) => this.resolveTankSituation(t)));
-                    this.explodes$.set(newTank.getBullet(), newTank.getBullet().explode$.subscribe(
-                        (b) => this.handleExplosion(b)));
-                    this.killTank$.set(newTank.getBullet(), newTank.getBullet().killTank$.subscribe(
-                        (t) => this.handleTankKilling(t)));
+                    this.subscribeOnTankEvents(newTank);
                 } else {
                     if (this.board.getOthersTanks().length <= 0) {
                         this.successGameOver$.next(true);
@@ -182,10 +174,7 @@ export class GameManagerService {
             }
         } else {
             tank.removeFromBoard();
-            setTimeout(() => {
-                tank.boardSprite.changeX(tank.startX);
-                tank.boardSprite.changeY(tank.startY);
-            }, 700);
+            setTimeout(() => tank.boardSprite.changePosition(new Point(tank.startX, tank.startY)), 700);
         }
     }
 }

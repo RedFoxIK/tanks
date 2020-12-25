@@ -62,8 +62,7 @@ export class MovableBoardElement extends BoardElement {
 
     public move(newPoint: Point) {
         if (newPoint != null) {
-            this.boardSprite.changeX(newPoint.x);
-            this.boardSprite.changeY(newPoint.y);
+            this.boardSprite.changePosition(newPoint);
 
             if (this.direction !== Direction.NONE) {
                 this.boardSprite.sprite.rotation = this.direction;
@@ -71,19 +70,12 @@ export class MovableBoardElement extends BoardElement {
         }
     }
 
-    public retrieveNextMovementWithDirection(direction: Direction) {
-        const currentDirection = this.direction;
-        this.direction = direction;
-        const newPoint = this.retrieveNextMovement();
-        this.direction = currentDirection;
-        return newPoint;
-    }
-
-    public retrieveNextMovement(): Point | null {
+    public retrieveNextMovement(direction?: Direction): Point | null {
         let newX = this.boardSprite.boardX;
         let newY = this.boardSprite.boardY;
+        const currentDirection = direction || this.direction;
 
-        switch (this.direction) {
+        switch (currentDirection) {
             case Direction.UP:
                 newY -= this.speed;
                 break;

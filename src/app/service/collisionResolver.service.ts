@@ -1,5 +1,5 @@
 import {Board} from "../model/board";
-import {Point, Water} from "../model/boardElement";
+import {BoardElement, Point, Water} from "../model/boardElement";
 import {Bonus} from "../model/bonus";
 import {Direction} from "../model/direction";
 import {Bullet, Tank, TankType} from "../model/tank";
@@ -11,46 +11,31 @@ export class CollisionResolverService {
         if (!tank.isElemOnBoard()) {
             return false;
         }
-        let leftCeil;
-        let rightCeil;
+        let leftCell;
+        let rightCell;
         const tankDirection = direction ? direction : tank.getDirection();
         switch (tankDirection) {
             case Direction.UP:
-                leftCeil = board.getBoardElemToBoard(this.floor(newPoint.x), this.floor(newPoint.y));
-                rightCeil = board.getBoardElemToBoard(this.ceil(newPoint.x), this.floor(newPoint.y));
+                leftCell = board.getBoardElemToBoard(this.floor(newPoint.x), this.floor(newPoint.y));
+                rightCell = board.getBoardElemToBoard(this.ceil(newPoint.x), this.floor(newPoint.y));
                 break;
             case Direction.DOWN:
-                leftCeil = board.getBoardElemToBoard(this.floor(newPoint.x), this.ceil(newPoint.y));
-                rightCeil = board.getBoardElemToBoard(this.ceil(newPoint.x), this.ceil(newPoint.y));
+                leftCell = board.getBoardElemToBoard(this.floor(newPoint.x), this.ceil(newPoint.y));
+                rightCell = board.getBoardElemToBoard(this.ceil(newPoint.x), this.ceil(newPoint.y));
                 break;
             case Direction.LEFT :
-                leftCeil = board.getBoardElemToBoard(this.floor(newPoint.x), this.floor(newPoint.y));
-                rightCeil = board.getBoardElemToBoard(this.floor(newPoint.x), this.ceil(newPoint.y));
+                leftCell = board.getBoardElemToBoard(this.floor(newPoint.x), this.floor(newPoint.y));
+                rightCell = board.getBoardElemToBoard(this.floor(newPoint.x), this.ceil(newPoint.y));
                 break;
             case Direction.RIGHT:
-                leftCeil = board.getBoardElemToBoard(this.ceil(newPoint.x), this.floor(newPoint.y));
-                rightCeil = board.getBoardElemToBoard(this.ceil(newPoint.x), this.ceil(newPoint.y));
+                leftCell = board.getBoardElemToBoard(this.ceil(newPoint.x), this.floor(newPoint.y));
+                rightCell = board.getBoardElemToBoard(this.ceil(newPoint.x), this.ceil(newPoint.y));
                 break;
             default:
                 return false;
         }
-        // TODO: next ifs divide on separate methods
-        if (leftCeil != null && leftCeil.isBarrier || rightCeil != null && rightCeil.isBarrier) {
-            return true;
-        }
-        if (tank.tankType === TankType.ENEMY && (leftCeil instanceof Water || rightCeil instanceof Water)) {
-            return true;
-        }
-        if (tank.tankType === TankType.PLAYER) {
-            const water = board.getBoardElemToBoard(Math.round(newPoint.x), Math.round(newPoint.y));
-            if (water != null && water instanceof Water) {
-                tank.takeLife();
-                return true;
-            }
-        }
-        return board.getAllTanks()
-            .filter((t) => tank !== t)
-            .filter((t) => this.tanksCollisionDetected(t, tank)).length > 0;
+        return this.isCollisionWithNeighBorCellsOrOtherTanks(tank, newPoint, leftCell, rightCell, board);
+
     }
 
     public static retrieveTargetForBullet(bullet: Bullet,  board: Board): void {
@@ -88,30 +73,24 @@ export class CollisionResolverService {
 
     public static calculateBulletsWithTankCollisions(board: Board) {
         const playerBullet = board.getPlayerTank().getBullet();
-        const bullets = board.getOthersTanks().map((tank) => tank.getBullet()).filter((b) => b.isActive());
+        const enemyBullets = board.getOthersTanks().map((tank) => tank.getBullet()).filter((b) => b.isActive());
 
         if (playerBullet.isActive()) {
-            // TODO: filter and first tank
             board.getOthersTanks().forEach((tank) => {
-                // TODO: function
-                if (Math.round(tank.boardSprite.boardX) === Math.round(playerBullet.boardSprite.boardX)
-                    && Math.round(tank.boardSprite.boardY) === Math.round(playerBullet.boardSprite.boardY)) {
+                if (this.isIntersectionsBetween(tank, playerBullet)) {
                     board.getPlayerTank().getBullet().explode();
                     playerBullet.killTank$.next(tank);
                 }
             });
         }
-
-        bullets.forEach((b) => {
-            if (Math.round(playerBullet.boardSprite.boardX) === Math.round(b.boardSprite.boardX)
-                && Math.round(playerBullet.boardSprite.boardY) === Math.round(b.boardSprite.boardY)) {
+        enemyBullets.forEach((enemyBullet) => {
+            if (this.isIntersectionsBetween(playerBullet, enemyBullet)) {
                 playerBullet.explode$.next(playerBullet);
-                b.explode$.next(b);
+                enemyBullet.explode$.next(enemyBullet);
             }
-            if (Math.round(board.getPlayerTank().boardSprite.boardX) === Math.round(b.boardSprite.boardX)
-                && Math.round(board.getPlayerTank().boardSprite.boardY) === Math.round(b.boardSprite.boardY)) {
+            if (this.isIntersectionsBetween(board.getPlayerTank(), enemyBullet)) {
                 board.getPlayerTank().getBullet().explode();
-                b.killTank$.next(board.getPlayerTank());
+                enemyBullet.killTank$.next(board.getPlayerTank());
             }
         });
     }
@@ -134,12 +113,37 @@ export class CollisionResolverService {
             Math.round(tank.boardSprite.boardY) === bonus.boardSprite.boardY;
     }
 
+    private static isIntersectionsBetween(boardElem1: BoardElement, boardElem2: BoardElement) {
+        return Math.round(boardElem1.boardSprite.boardX) === Math.round(boardElem2.boardSprite.boardX)
+            && Math.round(boardElem1.boardSprite.boardY) === Math.round(boardElem2.boardSprite.boardY);
+    }
+
+    private static isCollisionWithNeighBorCellsOrOtherTanks(tank: Tank, newPoint: Point, leftCell: BoardElement | null,
+                                                            rightCell: BoardElement | null, board: Board): boolean {
+        if (leftCell != null && leftCell.isBarrier || rightCell != null && rightCell.isBarrier) {
+            return true;
+        }
+        if (tank.tankType === TankType.ENEMY && (leftCell instanceof Water || rightCell instanceof Water)) {
+            return true;
+        }
+        if (tank.tankType === TankType.PLAYER) {
+            const water = board.getBoardElemToBoard(Math.round(newPoint.x), Math.round(newPoint.y));
+            if (water != null && water instanceof Water) {
+                tank.takeLife();
+                return true;
+            }
+        }
+        return board.getAllTanks()
+            .filter((t) => tank !== t)
+            .filter((t) => this.tanksCollisionDetected(t, tank)).length > 0;
+    }
+
     private static floor(coordinate: number): number {
         return Math.floor(coordinate) > 0 ? Math.floor(coordinate) : 0;
     }
 
     private static ceil(coordinate: number) {
-        return Math.ceil(coordinate) < 32 ? Math.ceil(coordinate) : 31;
+        return Math.ceil(coordinate) < Board.BOARD_SIZE ? Math.ceil(coordinate) : Board.BOARD_SIZE - 1;
     }
 
     private constructor() {}

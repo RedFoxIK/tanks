@@ -46,6 +46,7 @@ export class Tank extends MovableBoardElement {
         if (!this.bullet.isActive()) {
             const bulletDirection = this.getDirection() !== Direction.NONE ? this.getDirection() :
                 this.resolveDirectionByRotation(this.boardSprite.sprite.rotation);
+
             this.bullet.activate(new Point(this.boardSprite.boardX, this.boardSprite.boardY), bulletDirection);
             return true;
         }
