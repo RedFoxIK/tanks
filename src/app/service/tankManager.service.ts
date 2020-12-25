@@ -62,7 +62,7 @@ export class TankManagerService {
 
         possibleDirections = possibleDirections.filter((d) => {
             const newPoint = tank.retrieveNextMovementWithDirection(d);
-            return !CollisionResolverService.isCollisionDetectedForTankForDirection(tank, newPoint, this.board, d);
+            return !CollisionResolverService.isCollisionDetectedForTank(tank, newPoint, this.board, d);
         });
         const arrayForRandomDirectionsChoice = [];
         arrayForRandomDirectionsChoice.push(...possibleDirections);
@@ -70,7 +70,8 @@ export class TankManagerService {
             arrayForRandomDirectionsChoice.push(...Array(60).fill(direction));
         }
         arrayForRandomDirectionsChoice.push(...possibleDirections);
-        return arrayForRandomDirectionsChoice[Math.floor(Math.random() * Math.floor(arrayForRandomDirectionsChoice.length))];
+        return arrayForRandomDirectionsChoice[Math.floor(Math.random()
+            * Math.floor(arrayForRandomDirectionsChoice.length))];
     }
 
     private createTank(x: number, y: number, tankType: TankType) {

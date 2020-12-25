@@ -42,7 +42,6 @@ export class BoardElementsFactory {
 
     public createBonusElem(bonusNumber: number, x: number, y: number, tick: number) {
         switch (bonusNumber) {
-
             case BonusType.SPEED:
                 return new Speed(this.spriteService.createBoardElem(BonusAsset, BonusAsset.SPEED, x, y), tick);
             case BonusType.SNAIL:

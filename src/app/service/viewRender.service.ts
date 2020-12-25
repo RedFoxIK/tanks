@@ -43,15 +43,15 @@ export class ViewRenderService {
 
     public renderSuccessfulResultScene(scores: number) {
         this.spriteService.changeContainer(new PIXI.Container());
-        this.spriteService.addText("WIN", 280, 200, 100);
-        this.spriteService.addText("SCORES: " + scores, 300, 400, 50);
+        this.spriteService.addText("WIN!!!", 320, 200, 100);
+        this.spriteService.addText("SCORES: " + scores, 350, 500, 50, "yellow");
         this.spriteService.playSound(SoundAsset.WIN_SOUND);
     }
 
     public renderUnsuccessfulResultScene(scores: number) {
         this.spriteService.changeContainer(new PIXI.Container());
-        this.spriteService.addText("LOOSE", 280, 200, 100);
-        this.spriteService.addText("SCORES: " + scores, 300, 400, 50);
+        this.spriteService.addText("LOOSE", 320, 200, 100,);
+        this.spriteService.addText("SCORES: " + scores, 350, 500, 50, "red");
         this.spriteService.playSound(SoundAsset.LOSE_SOUND);
     }
 }

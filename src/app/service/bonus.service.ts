@@ -8,29 +8,8 @@ import {EnumService} from "./enum.service";
 import {SpriteService} from "./sprite.service";
 
 export class BonusService {
-
-    private static retrieveRandomBonus(): number {
-        const bonusTypes = EnumService.getNumericValues(BonusType);
-        return bonusTypes[BonusService.getRandomInt(bonusTypes.length)];
-    }
-
-    private static retrieveRandomEmptyCeil(board: Board): Point | null {
-        const emptyCeils = [];
-        for (let i = 0; i < 32; i++) {
-            for (let j = 0; j < Board.BOARD_SIZE; j++) {
-                if (!board.getBoardElemToBoard(i, j)) {
-                    emptyCeils.push(new Point(i, j));
-                }
-            }
-        }
-        return emptyCeils.length > 0 ? emptyCeils[BonusService.getRandomInt(emptyCeils.length)] : null;
-    }
-
-    private static getRandomInt(max) {
-        return Math.floor(Math.random() * Math.floor(max));
-    }
-    private readonly startWithBonuses = 300;
-    private readonly maxBonusesOnBoard = 2;
+    private static readonly START_TICK_FOR_BONUSES = 150;
+    private readonly maxBonusesOnBoard = 3;
 
     private bonuses: Bonus[] = [];
     private appliedBonuses: Bonus[] = [];
@@ -47,7 +26,7 @@ export class BonusService {
 
     public handleBonuses(board: Board) {
         this.tick += 1;
-        if (this.tick > this.startWithBonuses && this.bonuses.length < this.maxBonusesOnBoard &&
+        if (this.tick > BonusService.START_TICK_FOR_BONUSES && this.bonuses.length < this.maxBonusesOnBoard &&
             BonusService.getRandomInt(1000) % 300 === 0) {
 
             this.generateNewBonus(board, this.tick);
@@ -70,6 +49,28 @@ export class BonusService {
             }
         }
     }
+
+    private static retrieveRandomBonus(): number {
+        const bonusTypes = EnumService.getNumericValues(BonusType);
+        return bonusTypes[BonusService.getRandomInt(bonusTypes.length)];
+    }
+
+    private static retrieveRandomEmptyCeil(board: Board): Point | null {
+        const emptyCeils = [];
+        for (let i = 0; i < 32; i++) {
+            for (let j = 0; j < Board.BOARD_SIZE; j++) {
+                if (!board.getBoardElemToBoard(i, j)) {
+                    emptyCeils.push(new Point(i, j));
+                }
+            }
+        }
+        return emptyCeils.length > 0 ? emptyCeils[BonusService.getRandomInt(emptyCeils.length)] : null;
+    }
+
+    private static getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+
 
     private areIntersectionsWithBonuses(board: Board): void {
         board.getAllTanks().forEach((tank) => {

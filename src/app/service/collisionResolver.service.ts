@@ -6,21 +6,15 @@ import {Bullet, Tank, TankType} from "../model/tank";
 
 export class CollisionResolverService {
 
-    public static isCollisionDetectedForTankForDirection(tank: Tank, newPoint: Point, board: Board,
-                                                         direction: Direction): boolean {
-        const currentDirection = tank.getDirection();
-        tank.setDirection(direction);
-        const rez = this.isCollisionDetectedForTank(tank, newPoint, board);
-        tank.setDirection(currentDirection);
-        return rez;
-    }
-
-    public static isCollisionDetectedForTank(tank: Tank, newPoint: Point, board: Board): boolean {
+    public static isCollisionDetectedForTank(tank: Tank, newPoint: Point, board: Board,
+                                             direction?: Direction): boolean {
         if (!tank.isElemOnBoard()) {
             return false;
         }
-        let leftCeil, rightCeil;
-        switch (tank.getDirection()) {
+        let leftCeil;
+        let rightCeil;
+        const tankDirection = direction ? direction : tank.getDirection();
+        switch (tankDirection) {
             case Direction.UP:
                 leftCeil = board.getBoardElemToBoard(this.floor(newPoint.x), this.floor(newPoint.y));
                 rightCeil = board.getBoardElemToBoard(this.ceil(newPoint.x), this.floor(newPoint.y));
@@ -147,4 +141,6 @@ export class CollisionResolverService {
     private static ceil(coordinate: number) {
         return Math.ceil(coordinate) < 32 ? Math.ceil(coordinate) : 31;
     }
+
+    private constructor() {}
 }

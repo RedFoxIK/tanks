@@ -4,7 +4,7 @@ import {Direction} from "./direction";
 import {BoardSprite} from "./spriteWrapper";
 
 export class Tank extends MovableBoardElement {
-    public static INITIAL_SPEED = 0.03;
+    public static INITIAL_SPEED = 0.04;
 
     public readonly startX: number;
     public readonly startY: number;
@@ -71,10 +71,12 @@ export class Tank extends MovableBoardElement {
         this.lifeTaken$.next(this);
     }
 
-    public takeWound(shooter: Tank): void {
-        if (!this.isImmortal && this.tankType !== shooter.tankType) {
+    public takeWound(): boolean {
+        if (!this.isImmortal) {
             this.takeLife();
+            return true;
         }
+        return false;
     }
 
     public isDead(): boolean {

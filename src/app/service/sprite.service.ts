@@ -51,8 +51,9 @@ export class SpriteService {
             SoundAsset);
     }
 
-    public addText(text: string, x: number, y: number, fontSize: number): SpriteWrapper {
-        const stageText = new PIXI.Text(text, {fontSize, fontFamily: this.fontFamily, fill: this.textColor});
+    public addText(text: string, x: number, y: number, fontSize: number, color?: string): SpriteWrapper {
+        const textColor = color || this.textColor;
+        const stageText = new PIXI.Text(text, {fontSize, fontFamily: this.fontFamily, fill: textColor});
         this.container.addChild(stageText);
         const spriteWrapper = new SpriteWrapper(stageText, x, y);
         this.spriteWrappersMap.set(spriteWrapper.id, spriteWrapper);

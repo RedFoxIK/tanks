@@ -27,6 +27,9 @@ export class Board {
     }
 
     public getBoardElemToBoard(x: number, y: number): BoardElement | null {
+        if (x < 0 || y < 0 || x >= Board.BOARD_SIZE || y >= Board.BOARD_SIZE) {
+            return null;
+        }
         return this.boardElements[Math.round(x)][Math.round(y)];
     }
 

@@ -1,4 +1,5 @@
 import {noop, Subject, Subscription} from "rxjs";
+import {BoardModel} from "../api/boardModel";
 import {AnimationAsset, SoundAsset} from "../model/asset";
 import {Board} from "../model/board";
 import {BoardElement, BoardObject, Eagle, Wall} from "../model/boardElement";
@@ -15,8 +16,8 @@ export class GameManagerService {
     public readonly board: Board;
 
     public successGameOver$ = new Subject<boolean>();
-    private spriteService: SpriteService;
-    private boardElementFactory: BoardElementsFactory;
+    private readonly spriteService: SpriteService;
+    private readonly boardElementFactory: BoardElementsFactory;
     private bonusService: BonusService;
     private tankManagerService: TankManagerService;
     private statisticsService: StatisticService;
@@ -37,8 +38,7 @@ export class GameManagerService {
         this.statisticsService = new StatisticService(this.spriteService);
     }
 
-    // TODO: create model
-    public generateBoard(boardModel: any) {
+    public generateBoard(boardModel: BoardModel) {
         for (let i = 0; i < 32; i++) {
             this.createBoardElem(0, i, BoardObject.BLOCK);
             this.createBoardElem(31, i, BoardObject.BLOCK);
@@ -54,7 +54,6 @@ export class GameManagerService {
 
         this.tankManagerService.initializeTanks();
         this.spriteService.rerenderScene();
-        this.spriteService.playSound(SoundAsset.WIN_SOUND);
 
         this.subscribe();
         this.statisticsService.initializeStatisticsBoard();
@@ -86,8 +85,8 @@ export class GameManagerService {
 
         const bullets = this.board.getOthersTanks().map((tank) => tank.getBullet());
         bullets.forEach((b) => {
-            const newPoint = b.retrieveNextMovement();
-            b.move(newPoint);
+            const nextPoint = b.retrieveNextMovement();
+            b.move(nextPoint);
             CollisionResolverService.retrieveTargetForBullet(b, this.board);
         });
 
@@ -115,13 +114,11 @@ export class GameManagerService {
     }
 
     private handleTankKilling(tank: Tank) {
-        this.spriteService.playAnimation(AnimationAsset.EXPLODE, tank.boardSprite.boardX, tank.boardSprite.boardY);
-        this.spriteService.playSound(SoundAsset.EXPLODE_SOUND);
-        tank.removeFromBoard();
-        tank.takeLife();
-
-        if (this.board.getOthersTanks().length <= 0) {
-            this.successGameOver$.next(true);
+        const killed = tank.takeWound();
+        if (killed) {
+            this.spriteService.playAnimation(AnimationAsset.EXPLODE, tank.boardSprite.boardX, tank.boardSprite.boardY);
+            this.spriteService.playSound(SoundAsset.EXPLODE_SOUND);
+            tank.removeFromBoard();
         }
     }
 
@@ -174,6 +171,10 @@ export class GameManagerService {
                         (b) => this.handleExplosion(b)));
                     this.killTank$.set(newTank.getBullet(), newTank.getBullet().killTank$.subscribe(
                         (t) => this.handleTankKilling(t)));
+                } else {
+                    if (this.board.getOthersTanks().length <= 0) {
+                        this.successGameOver$.next(true);
+                    }
                 }
             }
         } else {
