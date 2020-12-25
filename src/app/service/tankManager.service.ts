@@ -8,13 +8,14 @@ import {EnumService} from "./enum.service";
 import {SpriteService} from "./sprite.service";
 
 export class TankManagerService {
+    private readonly MAX_TANK_AMOUNT = 10;
     private totalAmount;
-    private maxAmount = 10;
 
     private boardElementFactory: BoardElementsFactory;
     private spriteService: SpriteService;
-    private board: Board;
     private previousEnemiesDirections: Map<Tank, Direction> = new Map<Tank, Direction>();
+
+    private readonly board: Board;
 
     constructor(board: Board, boardElementFactory: BoardElementsFactory, spriteService: SpriteService) {
         this.board = board;
@@ -32,7 +33,7 @@ export class TankManagerService {
         this.board.removeTank(tank);
         this.spriteService.removeSprites(tank.boardSprite, tank.getBullet().boardSprite);
 
-        if (this.totalAmount < this.maxAmount) {
+        if (this.totalAmount < this.MAX_TANK_AMOUNT) {
             this.totalAmount++;
             const newTank = this.boardElementFactory.createTank(tank.startX, tank.startY, TankType.ENEMY);
             this.board.addTankToBoard(newTank);

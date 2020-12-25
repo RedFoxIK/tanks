@@ -4,9 +4,9 @@ import {GameManagerService} from "./gameManager.service";
 import {SpriteService} from "./sprite.service";
 
 export class ViewRenderService {
-    public readonly screenHeight = 768;
-    public readonly screenWidth = 1024;
-    public readonly backgroundColor = 0x123E67;
+    public readonly SCREEN_HEIGHT = 768;
+    public readonly SCREEN_WIDTH = 1024;
+    public readonly BACKGROUND_COLOR = 0x123E67;
 
     public readonly spriteService: SpriteService;
     private gameManagerService: GameManagerService;

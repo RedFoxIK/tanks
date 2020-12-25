@@ -15,12 +15,12 @@ export class GameController {
     private viewRenderService: ViewRenderService;
     private ticker: Ticker;
 
-    constructor(view: HTMLElement) {
+    constructor(view: HTMLElement, game: Game) {
         const app = new PIXI.Application({width: 1024, height: 768, backgroundColor: 0x123E67});
         this.ticker = app.ticker;
         this.ticker.autoStart = false;
 
-        this.game = new Game();
+        this.game = game;
         const spriteService = new SpriteService(app, view);
         this.gameManagerService = new GameManagerService(spriteService, this.game);
         this.viewRenderService = new ViewRenderService(spriteService, this.gameManagerService);
